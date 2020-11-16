@@ -528,5 +528,5 @@ par(mfrow=c(1,1))
 andrews(as.data.frame(cbind(pa,as.factor(d$Private))),clr=7,ymax=6)
 ```
 
-The Andrews' plot makes it difficult to appreciate a significant difference between both groups in my opinion. Perhaps I might need to read up more on it but it doesn't show tell me too much about the values other than around the middle. Where the we have the 0 and around -2, where the groups seem more divided than everywhere else, taking different directions in the dataset.
+The Andrews' plot makes it difficult to appreciate a significant difference between both groups in my opinion. Perhaps I might need to read up more on it but it doesn't tell me too much about the values other than around the middle. Where the we have the 0 and around -2, where the groups seem more divided than everywhere else, taking different directions in the dataset.
 

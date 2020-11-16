@@ -35,6 +35,46 @@
             breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
 \usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 \usepackage{graphicx,grffile}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -72,8 +112,7 @@
 \maketitle
 
 \hypertarget{the-covid-19-dataset}{%
-\section{\texorpdfstring{The COVID-19 dataset\\
-}{The COVID-19 dataset }}\label{the-covid-19-dataset}}
+\section{The COVID-19 dataset}\label{the-covid-19-dataset}}
 
 Coronavirus disease 2019 (COVID-19) is a contagious respiratory and
 vascular disease caused by severe acute respiratory syndrome coronavirus
@@ -82,6 +121,12 @@ other long enough, primarily via small droplets or aerosols, as an
 infected person breathes, coughs, sneezes, sings, or speaks. There are
 currently no proven vaccines or specific treatments for COVID-19, though
 several are in development.
+
+We have chosen this dataset as it not just fits the criteria but it
+allows us to also include interesting demographic information about each
+country like life expectancy, median age, human development index, among
+other things. These variables could provide quite interesting insight in
+the context of the COVID-19 pandemic.
 
 \hypertarget{variables}{%
 \subsection{Variables}\label{variables}}
@@ -166,5 +211,69 @@ The dataset contains the following variables:
   key dimensions of human development: a long and healthy life, being
   knowledgeable and have a decent standard of living
 \end{itemize}
+
+\hypertarget{simple-summary-statistics}{%
+\subsection{Simple summary statistics}\label{simple-summary-statistics}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(dplyr)}
+\NormalTok{df <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{'./data/data.csv'}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cols =}\StringTok{ }\KeywordTok{colnames}\NormalTok{(df)[}\KeywordTok{colnames}\NormalTok{(df) }\OperatorTok{!=}\StringTok{ 'location'} \OperatorTok{&}
+\StringTok{                    }\KeywordTok{colnames}\NormalTok{(df) }\OperatorTok{!=}\StringTok{ 'continent'} \OperatorTok{&}
+\StringTok{                    }\KeywordTok{colnames}\NormalTok{(df) }\OperatorTok{!=}\StringTok{ 'development'}\NormalTok{]}
+\KeywordTok{sapply}\NormalTok{(df }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(cols), quantile, }\DataTypeTok{na.rm =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        X total_cases new_cases new_cases_smoothed total_deaths new_deaths
+## 0%     0           1         0              0.000          1.0          0
+## 25%   45        4866         2              8.286         87.5          0
+## 50%   90       21793       132            188.000        497.0          1
+## 75%  135      114270      1080           1361.107       2255.5         19
+## 100% 180     9291245     83883          83817.286     231551.0        555
+##      new_deaths_smoothed total_cases_per_million new_cases_per_million
+## 0%               0.00000                   3.299                 0.000
+## 25%              0.10725                 617.926                 0.349
+## 50%              2.07150                4037.204                13.017
+## 75%             17.03575               12099.998               125.104
+## 100%           830.85700               63262.797              2523.739
+##      new_cases_smoothed_per_million total_deaths_per_million
+## 0%                          0.00000                   0.0840
+## 25%                         1.47525                  16.3485
+## 50%                        20.65150                  64.7930
+## 75%                       137.88025                 197.7290
+## 100%                     1152.20100                1053.9610
+##      new_deaths_per_million stringency_index population population_density
+## 0%                    0.000             5.56      38137             1.9800
+## 25%                   0.000            43.52    2722291            36.0660
+## 50%                   0.078            56.48    9660350            82.6000
+## 75%                   1.542            66.67   31255435           206.7125
+## 100%                 21.010            87.04 1439323774          7915.7310
+##      median_age aged_65_older aged_70_older gdp_per_capita extreme_poverty
+## 0%        15.10        1.1440        0.5260        661.240             0.1
+## 25%       21.65        3.4215        2.0330       3823.194             0.6
+## 50%       29.50        6.2240        3.5190      11840.846             2.2
+## 75%       38.70       14.0530        8.6605      26382.287            22.5
+## 100%      48.20       27.0490       18.4930     116935.600            77.6
+##      cardiovasc_death_rate diabetes_prevalence hospital_beds_per_thousand
+## 0%                 79.3700              0.9900                     0.1000
+## 25%               170.6675              5.1525                     1.3000
+## 50%               243.9640              7.1100                     2.3200
+## 75%               329.7885             10.0800                     3.8505
+## 100%              724.4170             30.5300                    13.0500
+##      life_expectancy human_development_index
+## 0%             53.28                   0.354
+## 25%            67.13                   0.588
+## 50%            74.25                   0.741
+## 75%            77.91                   0.825
+## 100%           84.63                   0.953
+\end{verbatim}
 
 \end{document}

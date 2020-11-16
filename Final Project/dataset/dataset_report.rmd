@@ -5,9 +5,11 @@ date: "November 16th, 2020"
 output: 'pdf_document'
 ---
 
-# The COVID-19 dataset\
+# The COVID-19 dataset
 
 Coronavirus disease 2019 (COVID-19) is a contagious respiratory and vascular disease caused by severe acute respiratory syndrome coronavirus 2. COVID-19 mainly spreads through the air when people are near each other long enough, primarily via small droplets or aerosols, as an infected person breathes, coughs, sneezes, sings, or speaks. There are currently no proven vaccines or specific treatments for COVID-19, though several are in development.
+
+We have chosen this dataset as it not just fits the criteria but it allows us to also include interesting demographic information about each country like life expectancy, median age, human development index, among other things. These variables could provide quite interesting insight in the context of the COVID-19 pandemic.
 
 ## Variables
 
@@ -40,5 +42,16 @@ The dataset contains the following variables:
 - life_expectancy: Life expectancy at birth in 2019	of each location
 - human_development_index: Summary measure of average achievement in key dimensions of human development: a long and healthy life, being knowledgeable and have a decent standard of living
 
-## Summary statistics
+## Simple summary statistics
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+library(dplyr)
+df <- read.csv('./data/data.csv')
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cols = colnames(df)[colnames(df) != 'location' &
+                    colnames(df) != 'continent' &
+                    colnames(df) != 'development']
+sapply(df %>% dplyr::select(cols), quantile, na.rm = TRUE)
+```
