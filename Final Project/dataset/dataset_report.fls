@@ -1,10 +1,10 @@
-PWD /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project
+PWD /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset
 INPUT /etc/texmf/web2c/texmf.cnf
 INPUT /usr/share/texmf/web2c/texmf.cnf
 INPUT /usr/share/texlive/texmf-dist/web2c/texmf.cnf
 INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.tex
-OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.log
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.tex
+OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.log
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
@@ -125,9 +125,9 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/grffile/grffile.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/grffile/grffile.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
 INPUT /usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.aux
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.aux
-OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.aux
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.aux
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.aux
+OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.aux
 INPUT /usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
 INPUT /usr/share/texlive/texmf-dist/tex/latex/microtype/mt-cmr.cfg
 INPUT /usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
@@ -136,14 +136,14 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/refcount/refcount.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/refcount/refcount.sty
 INPUT /usr/share/texlive/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
 INPUT /usr/share/texlive/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
-OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.pdf
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
-OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
+OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.pdf
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
+OUTPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
 INPUT /usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
@@ -191,9 +191,9 @@ INPUT /usr/share/texmf/tex/latex/lm/ts1lmr.fd
 INPUT /usr/share/texmf/tex/latex/lm/ts1lmr.fd
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmr10.tfm
 INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.aux
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
-INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset_report.out
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.aux
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
+INPUT /home/dreth/.local/share/Cryptomator/mnt/qO7BgnSQeH87_4/UC3M/COURSES/multivariate analysis/UC3MMultivariateAnalysis/Final Project/dataset/dataset_report.out
 INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc
 INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc
 INPUT /usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb
