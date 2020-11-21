@@ -216,8 +216,9 @@ matrix}\label{testing-correlation-matrix}}
 ## [2,] 0.9076923 1.0000000
 \end{verbatim}
 
-\hypertarget{putting-it-all-together}{%
-\subsection{Putting it all together}\label{putting-it-all-together}}
+\hypertarget{putting-it-all-together-calling-other-functions}{%
+\subsection{Putting it all together calling other
+functions}\label{putting-it-all-together-calling-other-functions}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -229,6 +230,44 @@ matrix}\label{testing-correlation-matrix}}
     \KeywordTok{print}\NormalTok{(}\StringTok{'Covariance Matrix:'}\NormalTok{)}
     \KeywordTok{print}\NormalTok{(covmatrix)}
 \NormalTok{    corrmatrix <-}\StringTok{ }\KeywordTok{correlation_matrix}\NormalTok{(covmatrix)}
+    \KeywordTok{print}\NormalTok{(}\StringTok{'Correlation Matrix:'}\NormalTok{)}
+    \KeywordTok{print}\NormalTok{(corrmatrix)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\newpage
+
+\hypertarget{putting-it-all-together-without-calling-other-functions}{%
+\subsection{Putting it all together without calling other
+functions}\label{putting-it-all-together-without-calling-other-functions}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{final_function <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(pis, means, sigmas) \{}
+    \CommentTok{# Mean Vector and covariance matrix}
+\NormalTok{    meanvector <-}\StringTok{ }\KeywordTok{c}\NormalTok{()}
+\NormalTok{    covmatrix <-}\StringTok{ }\DecValTok{0}
+
+    \CommentTok{# Single loop for both correlation matrix and mean vector}
+    \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\KeywordTok{length}\NormalTok{(pis)) \{}
+\NormalTok{        meanvector <-}\StringTok{ }\KeywordTok{c}\NormalTok{(meanvector, pis[i]}\OperatorTok{*}\NormalTok{means[,i])}
+\NormalTok{        covmatrix <-}\StringTok{ }\NormalTok{covmatrix }\OperatorTok{+}\StringTok{ }\NormalTok{pis[i]}\OperatorTok{*}\NormalTok{(sigmas[[i]] }\OperatorTok{+}\StringTok{ }\NormalTok{means[,i]}\OperatorTok{%*%}\KeywordTok{t}\NormalTok{(means[,i]))}
+\NormalTok{    \}}
+
+    \CommentTok{# Calculating mean vector and covariance matrix}
+\NormalTok{    meanvector <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rowSums}\NormalTok{(}\KeywordTok{matrix}\NormalTok{(meanvector, }\DataTypeTok{nrow=}\DecValTok{2}\NormalTok{)),}\DataTypeTok{nrow=}\DecValTok{2}\NormalTok{)}
+\NormalTok{    covmatrix <-}\StringTok{ }\NormalTok{covmatrix }\OperatorTok{-}\StringTok{ }\NormalTok{meanvector}\OperatorTok{%*%}\KeywordTok{t}\NormalTok{(meanvector)}
+
+    \CommentTok{# Correlation matrix}
+\NormalTok{    delta <-}\StringTok{ }\KeywordTok{diag}\NormalTok{(}\KeywordTok{diag}\NormalTok{(covmatrix)}\OperatorTok{^}\NormalTok{(}\OperatorTok{-}\DecValTok{1}\OperatorTok{/}\DecValTok{2}\NormalTok{))}
+\NormalTok{    corrmatrix <-}\StringTok{ }\NormalTok{delta}\OperatorTok{%*%}\NormalTok{covmatrix}\OperatorTok{%*%}\NormalTok{delta}
+
+    \CommentTok{# Printing results}
+    \KeywordTok{print}\NormalTok{(}\StringTok{'Mean Vector:'}\NormalTok{)}
+    \KeywordTok{print}\NormalTok{(meanvector)}
+    \KeywordTok{print}\NormalTok{(}\StringTok{'Covariance Matrix:'}\NormalTok{)}
+    \KeywordTok{print}\NormalTok{(covmatrix)}
     \KeywordTok{print}\NormalTok{(}\StringTok{'Correlation Matrix:'}\NormalTok{)}
     \KeywordTok{print}\NormalTok{(corrmatrix)}
 \NormalTok{\}}
@@ -274,6 +313,15 @@ matrix}\label{testing-correlation-matrix}}
 ## [2,] 0.9076923 1.0000000
 \end{verbatim}
 
+\hypertarget{correlation-analysis-for-ex.1}{%
+\subsubsection{Correlation analysis for
+ex.1}\label{correlation-analysis-for-ex.1}}
+
+We can see that the two variables are highly correlated, it's also a
+positive correlation at 0.9076923
+
+\newpage
+
 \hypertarget{exercise-2}{%
 \subsection{Exercise 2}\label{exercise-2}}
 
@@ -307,6 +355,17 @@ matrix}\label{testing-correlation-matrix}}
 ## [1,]    1    0
 ## [2,]    0    1
 \end{verbatim}
+
+\hypertarget{correlation-analysis-for-ex.2}{%
+\subsubsection{Correlation analysis for
+ex.2}\label{correlation-analysis-for-ex.2}}
+
+We can see that the two variables are not correlated at all (correlation
+0). However given that the means are zero, our covariance matrix is just
+the identity matrix. Therefore our correlation matrix should also be the
+same matrix, as \(I_{n}^{-1/2} I_{n} I_{n}^{-1/2} = I_{n}\).
+
+\newpage
 
 \hypertarget{exercise-3}{%
 \subsection{Exercise 3}\label{exercise-3}}
@@ -342,6 +401,13 @@ matrix}\label{testing-correlation-matrix}}
 ## [2,] -0.83  1.00
 \end{verbatim}
 
+\hypertarget{correlation-analysis-for-ex.3}{%
+\subsubsection{Correlation analysis for
+ex.3}\label{correlation-analysis-for-ex.3}}
+
+We can see that the two variables are significantly correlated, it's
+also a negative correlation at -0.83.
+
 \hypertarget{exercise-4}{%
 \subsection{Exercise 4}\label{exercise-4}}
 
@@ -375,5 +441,12 @@ matrix}\label{testing-correlation-matrix}}
 ## [1,] 1.00 0.83
 ## [2,] 0.83 1.00
 \end{verbatim}
+
+\hypertarget{correlation-analysis-for-ex.4}{%
+\subsubsection{Correlation analysis for
+ex.4}\label{correlation-analysis-for-ex.4}}
+
+We can see that the two variables are significantly correlated, it's
+also a positive correlation at 0.83.
 
 \end{document}

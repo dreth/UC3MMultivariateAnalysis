@@ -68,7 +68,7 @@ corrmatrix <- correlation_matrix(covmatrix)
 corrmatrix
 ```
 
-## Putting it all together
+## Putting it all together calling other functions
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 final_function <- function(pis, means, sigmas) {
@@ -79,6 +79,40 @@ final_function <- function(pis, means, sigmas) {
     print('Covariance Matrix:')
     print(covmatrix)
     corrmatrix <- correlation_matrix(covmatrix)
+    print('Correlation Matrix:')
+    print(corrmatrix)
+}
+```
+
+\newpage
+
+## Putting it all together without calling other functions
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+final_function <- function(pis, means, sigmas) {
+    # Mean Vector and covariance matrix
+    meanvector <- c()
+    covmatrix <- 0
+
+    # Single loop for both correlation matrix and mean vector
+    for (i in 1:length(pis)) {
+        meanvector <- c(meanvector, pis[i]*means[,i])
+        covmatrix <- covmatrix + pis[i]*(sigmas[[i]] + means[,i]%*%t(means[,i]))
+    }
+
+    # Calculating mean vector and covariance matrix
+    meanvector <- matrix(rowSums(matrix(meanvector, nrow=2)),nrow=2)
+    covmatrix <- covmatrix - meanvector%*%t(meanvector)
+
+    # Correlation matrix
+    delta <- diag(diag(covmatrix)^(-1/2))
+    corrmatrix <- delta%*%covmatrix%*%delta
+
+    # Printing results
+    print('Mean Vector:')
+    print(meanvector)
+    print('Covariance Matrix:')
+    print(covmatrix)
     print('Correlation Matrix:')
     print(corrmatrix)
 }
@@ -102,6 +136,12 @@ sigmas[[2]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
 final_function(pis,means,sigmas)
 ```
 
+### Correlation analysis for ex.1
+
+We can see that the two variables are highly correlated, it's also a positive correlation at 0.9076923
+
+\newpage
+
 ## Exercise 2
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
@@ -115,6 +155,12 @@ sigmas[[2]] <- matrix(c(1,-0.7,-0.7,1), nrow=length(pis))
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 final_function(pis,means,sigmas)
 ```
+
+### Correlation analysis for ex.2
+
+We can see that the two variables are not correlated at all (correlation 0). However given that the means are zero, our covariance matrix is just the identity matrix. Therefore our correlation matrix should also be the same matrix, as $I_{n}^{-1/2} I_{n} I_{n}^{-1/2} = I_{n}$.
+
+\newpage
 
 ## Exercise 3
 
@@ -130,6 +176,11 @@ sigmas[[2]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
 final_function(pis,means,sigmas)
 ```
 
+### Correlation analysis for ex.3
+
+We can see that the two variables are significantly correlated, it's also a negative correlation at -0.83.
+
+
 ## Exercise 4
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
@@ -143,3 +194,7 @@ sigmas[[2]] <- matrix(c(1,-0.7,-0.7,1), nrow=length(pis))
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 final_function(pis,means,sigmas)
 ```
+
+### Correlation analysis for ex.4
+
+We can see that the two variables are significantly correlated, it's also a positive correlation at 0.83.
