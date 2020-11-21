@@ -5,16 +5,45 @@ date: "November 21th, 2020"
 output: 'pdf_document'
 ---
 
-# Function to compute mean vector, covariance matrix and correlation matrix
-
+## Function to compute mean vector
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
 mean_vector <- function(pis, means) {
-    vars <- length(pis)
-    mean_vector <- c()
-    for (i in length(pis)) {
-        mean_vector <- c(mean_vector, pi[i]*
+    mv <- c()
+    for (i in 1:length(pis)) {
+        mv <- c(mv, pis[i]*means[,i])
     }
-    return(mean_vector)
+    return(matrix(rowSums(matrix(mv, nrow=2)),nrow=2))
 }
+```
+
+### Testing mean vector
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pis <- c(0.5, 0.5)
+means <- matrix(c(0,0,3,3), nrow=length(pis))
+mean_vector(pis,means)
+```
+
+## Function to compute covariance matrix
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+covariance_matrix <- function(pis, means, sigmas, meanvector) {
+    result <- 0
+    for (i in 1:length(pis)) {
+        result <- result + pis[i]*(sigmas[[i]] + means[,i]%*%t(means[,i]))
+    }
+    return(result - meanvector%*%t(meanvector))
+}
+```
+
+### Testing covariance matrix
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pis <- c(0.5, 0.5)
+means <- matrix(c(0,0,3,3), nrow=length(pis))
+sigmas <- list()
+sigmas[[1]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
+sigmas[[2]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
+covariance_matrix(pis,means, sigmas, mean_vector(pis,means))
 ```
