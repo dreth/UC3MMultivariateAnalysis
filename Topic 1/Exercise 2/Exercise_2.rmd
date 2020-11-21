@@ -5,6 +5,8 @@ date: "November 21th, 2020"
 output: 'pdf_document'
 ---
 
+# Creating function(s)
+
 ## Function to compute mean vector
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
@@ -22,7 +24,8 @@ mean_vector <- function(pis, means) {
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 pis <- c(0.5, 0.5)
 means <- matrix(c(0,0,3,3), nrow=length(pis))
-mean_vector(pis,means)
+meanvector <- mean_vector(pis,means)
+meanvector
 ```
 
 ## Function to compute covariance matrix
@@ -45,5 +48,98 @@ means <- matrix(c(0,0,3,3), nrow=length(pis))
 sigmas <- list()
 sigmas[[1]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
 sigmas[[2]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
-covariance_matrix(pis,means, sigmas, mean_vector(pis,means))
+covmatrix <- covariance_matrix(pis,means, sigmas, mean_vector(pis,means))
+covmatrix
+```
+
+## Function to compute correlation matrix
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+correlation_matrix <- function(covmatrix) {
+    delta <- diag(diag(covmatrix)^(-1/2))
+    return(delta%*%covmatrix%*%delta)
+}
+```
+
+### Testing correlation matrix
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+corrmatrix <- correlation_matrix(covmatrix)
+corrmatrix
+```
+
+## Putting it all together
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+final_function <- function(pis, means, sigmas) {
+    meanvector <- mean_vector(pis,means)
+    print('Mean Vector:')
+    print(meanvector)
+    covmatrix <- covariance_matrix(pis,means, sigmas, meanvector)
+    print('Covariance Matrix:')
+    print(covmatrix)
+    corrmatrix <- correlation_matrix(covmatrix)
+    print('Correlation Matrix:')
+    print(corrmatrix)
+}
+```
+
+\newpage
+
+# Exercises
+
+## Exercise 1
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pis <- c(0.5, 0.5)
+means <- matrix(c(0,0,3,3), nrow=length(pis))
+sigmas <- list()
+sigmas[[1]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
+sigmas[[2]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+final_function(pis,means,sigmas)
+```
+
+## Exercise 2
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pis <- c(0.5, 0.5)
+means <- matrix(c(0,0,0,0), nrow=length(pis))
+sigmas <- list()
+sigmas[[1]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
+sigmas[[2]] <- matrix(c(1,-0.7,-0.7,1), nrow=length(pis))
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+final_function(pis,means,sigmas)
+```
+
+## Exercise 3
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pis <- c(0.5, 0.5)
+means <- matrix(c(-3,3,3,-3), nrow=length(pis))
+sigmas <- list()
+sigmas[[1]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
+sigmas[[2]] <- matrix(c(1,0.7,0.7,1), nrow=length(pis))
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+final_function(pis,means,sigmas)
+```
+
+## Exercise 4
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pis <- c(0.5, 0.5)
+means <- matrix(c(-3,-3,3,3), nrow=length(pis))
+sigmas <- list()
+sigmas[[1]] <- matrix(c(1,-0.7,-0.7,1), nrow=length(pis))
+sigmas[[2]] <- matrix(c(1,-0.7,-0.7,1), nrow=length(pis))
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+final_function(pis,means,sigmas)
 ```
