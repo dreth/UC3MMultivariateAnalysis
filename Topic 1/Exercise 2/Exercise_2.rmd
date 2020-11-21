@@ -1,0 +1,20 @@
+---
+title: 'Topic 1: Exercise 2'
+author: "Daniel Alonso"
+date: "November 21th, 2020"
+output: 'pdf_document'
+---
+
+# Function to compute mean vector, covariance matrix and correlation matrix
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+mean_vector <- function(pis, means) {
+    vars <- length(pis)
+    mean_vector <- c()
+    for (i in length(pis)) {
+        mean_vector <- c(mean_vector, pi[i]*
+    }
+    return(mean_vector)
+}
+```
