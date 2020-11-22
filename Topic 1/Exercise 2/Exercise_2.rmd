@@ -158,7 +158,7 @@ final_function(pis,means,sigmas)
 
 ### Correlation analysis for ex.2
 
-We can see that the two variables are not correlated at all (correlation 0). However given that the means are zero, our covariance matrix is just the identity matrix. Therefore our correlation matrix should also be the same matrix, as $I_{n}^{-1/2} I_{n} I_{n}^{-1/2} = I_{n}$.
+We can see that the two variables are not correlated at all (correlation 0) and independent. However given that the means are zero, our covariance matrix is just the identity matrix. Therefore our correlation matrix should also be the same matrix, as $I_{n}^{-1/2} I_{n} I_{n}^{-1/2} = I_{n}$.
 
 \newpage
 
