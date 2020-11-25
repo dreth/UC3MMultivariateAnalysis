@@ -145,7 +145,7 @@ exercise}\label{importing-data-as-described-by-exercise}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{d <-}\StringTok{ }\NormalTok{d }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(}\StringTok{'Private'}\NormalTok{,}\StringTok{'Apps'}\NormalTok{,}\StringTok{'Accept'}\NormalTok{,}\StringTok{'Enroll'}\NormalTok{,}\StringTok{'F.Undergrad'}\NormalTok{)}
+\NormalTok{data <-}\StringTok{ }\NormalTok{d }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(}\StringTok{'Private'}\NormalTok{,}\StringTok{'Apps'}\NormalTok{,}\StringTok{'Accept'}\NormalTok{,}\StringTok{'Enroll'}\NormalTok{,}\StringTok{'F.Undergrad'}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -154,7 +154,7 @@ exercise}\label{importing-data-as-described-by-exercise}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(d)}
+\NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(data)}
 \NormalTok{cov_matrix}
 \end{Highlighting}
 \end{Shaded}
@@ -195,27 +195,7 @@ provide?}\label{what-information-does-the-sample-covariance-provide}}
 
 We know that because the Private variable (binary variable) has only 2
 possible values, its covariance with other variables is always going to
-be relatively small, and probably depends uniquely on the variance of
-that quantitative variable.
-
-And we can prove this by simulating a covariance matrix:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{size <-}\StringTok{ }\DecValTok{1000}
-\NormalTok{sim <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,size}\OperatorTok{*}\DecValTok{777}\NormalTok{),}\DataTypeTok{nrow=}\DecValTok{777}\NormalTok{))}
-\KeywordTok{names}\NormalTok{(sim) <-}\StringTok{ }\KeywordTok{paste}\NormalTok{(}\StringTok{"sim"}\NormalTok{,}\DecValTok{1}\OperatorTok{:}\NormalTok{size,}\DataTypeTok{sep=}\StringTok{"_"}\NormalTok{)}
-\NormalTok{sim}\OperatorTok{$}\NormalTok{Private <-}\StringTok{ }\NormalTok{d }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(}\StringTok{'Private'}\NormalTok{)}
-\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\NormalTok{size) \{}
-\NormalTok{    sim[i] <-}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\KeywordTok{length}\NormalTok{(d}\OperatorTok{$}\NormalTok{Private),}\DataTypeTok{mean=}\KeywordTok{runif}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DataTypeTok{min=}\DecValTok{1}\NormalTok{,}\DataTypeTok{max=}\DecValTok{100}\NormalTok{),}\DataTypeTok{sd=}\KeywordTok{runif}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DataTypeTok{min=}\DecValTok{1}\NormalTok{,}\DataTypeTok{max=}\DecValTok{5000}\NormalTok{))}
-\NormalTok{\}}
-\NormalTok{Y <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(sim)[}\DecValTok{1}\NormalTok{,]}
-\NormalTok{X <-}\StringTok{ }\KeywordTok{diag}\NormalTok{(}\KeywordTok{cov}\NormalTok{(sim))}
-\KeywordTok{plot}\NormalTok{(X,Y)}
-\end{Highlighting}
-\end{Shaded}
-
-\includegraphics{Exercise_3_files/figure-latex/unnamed-chunk-7-1.pdf}
+be relatively small.
 
 \newpage
 
@@ -234,6 +214,6 @@ variable}\label{scatter-plot-of-our-quantitative-variables-and-the-private-binar
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{Exercise_3_files/figure-latex/unnamed-chunk-8-1.pdf}
+\includegraphics{Exercise_3_files/figure-latex/unnamed-chunk-7-1.pdf}
 
 \end{document}

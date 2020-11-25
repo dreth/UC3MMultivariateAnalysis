@@ -26,13 +26,13 @@ d$Private <- ifelse(d$Private == "Yes", 1, 0)
 #### Selecting columns
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-d <- d %>% dplyr::select('Private','Apps','Accept','Enroll','F.Undergrad')
+data <- d %>% dplyr::select('Private','Apps','Accept','Enroll','F.Undergrad')
 ```
 
 #### Calculating covariances
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-cov_matrix <- cov(d)
+cov_matrix <- cov(data)
 cov_matrix
 ```
 
@@ -47,26 +47,13 @@ corr_matrix
 
 ## What information does the sample covariance provide?
 
-We know that because the Private variable (binary variable) has only 2 possible values, its covariance with other variables is always going to be relatively small, and probably depends uniquely on the variance of that quantitative variable.
-
-And we can prove this by simulating a covariance matrix:
-
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-size <- 1000
-sim <- data.frame(matrix(rep(0,size*777),nrow=777))
-names(sim) <- paste("sim",1:size,sep="_")
-sim$Private <- d %>% dplyr::select('Private')
-for (i in 1:size) {
-    sim[i] <- rnorm(length(d$Private),mean=runif(1,min=1,max=100),sd=runif(1,min=1,max=5000))
-}
-Y <- cov(sim)[1,]
-X <- diag(cov(sim))
-plot(X,Y)
-```
+We know that because the Private variable (binary variable) has only 2 possible values, its covariance with other variables is always going to be relatively small.
 
 \newpage
 
 ## What information does the sample correlation provide?
+
+
 
 ### Scatter plot of our quantitative variables and the Private binary variable
 
