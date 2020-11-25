@@ -1,0 +1,16 @@
+---
+title: 'Topic 2: Exercise 1'
+author: "Daniel Alonso"
+date: "November 25th, 2020"
+output: 'pdf_document'
+---
+
+#### Importing data as described by exercise
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+d <- read.csv("./datasets/Colleges.csv")
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+d$Private <- ifelse(d$Private == "Yes", 1, 0)
+```
