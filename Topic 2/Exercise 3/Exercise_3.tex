@@ -111,6 +111,15 @@
 \begin{document}
 \maketitle
 
+\hypertarget{importing-libraries}{%
+\paragraph{Importing libraries}\label{importing-libraries}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(dplyr)}
+\end{Highlighting}
+\end{Shaded}
+
 \hypertarget{importing-data-as-described-by-exercise}{%
 \paragraph{Importing data as described by
 exercise}\label{importing-data-as-described-by-exercise}}
@@ -120,5 +129,111 @@ exercise}\label{importing-data-as-described-by-exercise}}
 \NormalTok{d <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"../../datasets/Colleges.csv"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
+
+\hypertarget{replacing-binary-variable-private-with-1-and-0}{%
+\paragraph{Replacing binary variable Private with 1 and
+0}\label{replacing-binary-variable-private-with-1-and-0}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{d}\OperatorTok{$}\NormalTok{Private <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(d}\OperatorTok{$}\NormalTok{Private }\OperatorTok{==}\StringTok{ "Yes"}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{selecting-columns}{%
+\paragraph{Selecting columns}\label{selecting-columns}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{d <-}\StringTok{ }\NormalTok{d }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(}\StringTok{'Private'}\NormalTok{,}\StringTok{'Apps'}\NormalTok{,}\StringTok{'Accept'}\NormalTok{,}\StringTok{'Enroll'}\NormalTok{,}\StringTok{'F.Undergrad'}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{calculating-covariances}{%
+\paragraph{Calculating covariances}\label{calculating-covariances}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(d)}
+\NormalTok{cov_matrix}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                   Private          Apps        Accept       Enroll  F.Undergrad
+## Private         0.1986559     -745.3552     -519.2042    -235.1942    -1330.764
+## Apps         -745.3552439 14978459.5301  8949859.8119 3045255.9876 15289702.474
+## Accept       -519.2042169  8949859.8119  6007959.6988 2076267.7627 10393582.435
+## Enroll       -235.1942393  3045255.9876  2076267.7627  863368.3923  4347529.884
+## F.Undergrad -1330.7637175 15289702.4742 10393582.4355 4347529.8841 23526579.326
+\end{verbatim}
+
+\newpage
+
+\hypertarget{calculating-correlations}{%
+\paragraph{Calculating correlations}\label{calculating-correlations}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{corr_matrix <-}\StringTok{ }\KeywordTok{cov2cor}\NormalTok{(cov_matrix)}
+\NormalTok{corr_matrix}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                Private       Apps     Accept     Enroll F.Undergrad
+## Private      1.0000000 -0.4320947 -0.4752520 -0.5679078  -0.6155605
+## Apps        -0.4320947  1.0000000  0.9434506  0.8468221   0.8144906
+## Accept      -0.4752520  0.9434506  1.0000000  0.9116367   0.8742233
+## Enroll      -0.5679078  0.8468221  0.9116367  1.0000000   0.9646397
+## F.Undergrad -0.6155605  0.8144906  0.8742233  0.9646397   1.0000000
+\end{verbatim}
+
+\hypertarget{what-information-does-the-sample-covariance-provide}{%
+\subsection{What information does the sample covariance
+provide?}\label{what-information-does-the-sample-covariance-provide}}
+
+We know that because the Private variable (binary variable) has only 2
+possible values, its covariance with other variables is always going to
+be relatively small, and probably depends uniquely on the variance of
+that quantitative variable.
+
+And we can prove this by simulating a covariance matrix:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{size <-}\StringTok{ }\DecValTok{1000}
+\NormalTok{sim <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,size}\OperatorTok{*}\DecValTok{777}\NormalTok{),}\DataTypeTok{nrow=}\DecValTok{777}\NormalTok{))}
+\KeywordTok{names}\NormalTok{(sim) <-}\StringTok{ }\KeywordTok{paste}\NormalTok{(}\StringTok{"sim"}\NormalTok{,}\DecValTok{1}\OperatorTok{:}\NormalTok{size,}\DataTypeTok{sep=}\StringTok{"_"}\NormalTok{)}
+\NormalTok{sim}\OperatorTok{$}\NormalTok{Private <-}\StringTok{ }\NormalTok{d }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(}\StringTok{'Private'}\NormalTok{)}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\NormalTok{size) \{}
+\NormalTok{    sim[i] <-}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\KeywordTok{length}\NormalTok{(d}\OperatorTok{$}\NormalTok{Private),}\DataTypeTok{mean=}\KeywordTok{runif}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DataTypeTok{min=}\DecValTok{1}\NormalTok{,}\DataTypeTok{max=}\DecValTok{100}\NormalTok{),}\DataTypeTok{sd=}\KeywordTok{runif}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DataTypeTok{min=}\DecValTok{1}\NormalTok{,}\DataTypeTok{max=}\DecValTok{5000}\NormalTok{))}
+\NormalTok{\}}
+\NormalTok{Y <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(sim)[}\DecValTok{1}\NormalTok{,]}
+\NormalTok{X <-}\StringTok{ }\KeywordTok{diag}\NormalTok{(}\KeywordTok{cov}\NormalTok{(sim))}
+\KeywordTok{plot}\NormalTok{(X,Y)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Exercise_3_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\newpage
+
+\hypertarget{what-information-does-the-sample-correlation-provide}{%
+\subsection{What information does the sample correlation
+provide?}\label{what-information-does-the-sample-correlation-provide}}
+
+\hypertarget{scatter-plot-of-our-quantitative-variables-and-the-private-binary-variable}{%
+\subsubsection{Scatter plot of our quantitative variables and the
+Private binary
+variable}\label{scatter-plot-of-our-quantitative-variables-and-the-private-binary-variable}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(d}\OperatorTok{$}\NormalTok{Private, d}\OperatorTok{$}\NormalTok{Apps)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Exercise_3_files/figure-latex/unnamed-chunk-8-1.pdf}
 
 \end{document}
