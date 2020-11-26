@@ -45,9 +45,43 @@ corr_matrix <- cov2cor(cov_matrix)
 corr_matrix
 ```
 
+#### Experimenting a little bit with the private variable
+
+Let's try changing the Yes to 0 and the No to 1 and checking the covariances and correlations
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+d <- read.csv("../../datasets/Colleges.csv")
+d$Private <- ifelse(d$Private == "Yes", 0, 1)
+data <- d %>% dplyr::select('Private','Apps','Accept','Enroll','F.Undergrad')
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cov_matrix <- cov(data)
+cov_matrix
+corr_matrix <- cov2cor(cov_matrix)
+corr_matrix
+```
+
+We get the same numbers with reversed signs.
+
+\newpage
+
+Let's try having the same amount of 1s and 0s and see how correlation and covariance change:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+data$Private <- c(rep(0,length(data$Private)/2 + 1), rep(1,length(data$Private)/2))
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cov_matrix <- cov(data)
+cov_matrix
+corr_matrix <- cov2cor(cov_matrix)
+corr_matrix
+```
+
 ## What information does the sample covariance provide?
 
-We know that because the Private variable (binary variable) has only 2 possible values, its covariance with other variables is always going to be relatively small.
+We know that because the Private variable (binary variable) has only 2 possible values, its covariance with other variables is always going to be relatively small and will not provide much information.
 
 \newpage
 
@@ -58,5 +92,6 @@ We know that because the Private variable (binary variable) has only 2 possible 
 ### Scatter plot of our quantitative variables and the Private binary variable
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-plot(d$Private, d$Apps)
+model = lm(Private ~ Apps, data=d)
+summary(model)
 ```
