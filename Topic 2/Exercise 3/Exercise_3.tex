@@ -229,49 +229,6 @@ covariance and correlation change and plot it.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\PreprocessorTok{\#include }\ImportTok{\textless{}Rcpp.h\textgreater{}}
-\KeywordTok{using} \KeywordTok{namespace}\NormalTok{ Rcpp;}
-
-\CommentTok{// [[Rcpp::export]]}
-\DataTypeTok{double}\NormalTok{ rcpp\_cov(NumericVector v1, NumericVector v2) \{}
-    \DataTypeTok{double}\NormalTok{ vsize = v1.size();}
-    \DataTypeTok{double}\NormalTok{ cv = }\DecValTok{0}\NormalTok{;}
-    \DataTypeTok{double}\NormalTok{ v1mean = mean(v1);}
-    \DataTypeTok{double}\NormalTok{ v2mean = mean(v2);}
-    \DataTypeTok{double}\NormalTok{ result;}
-    \ControlFlowTok{for}\NormalTok{ (}\DataTypeTok{unsigned}\NormalTok{ i=}\DecValTok{0}\NormalTok{; i\textless{}vsize; i++) \{}
-\NormalTok{        cv = cv + (v1[i] {-} v1mean)*(v2[i] {-} v2mean);}
-\NormalTok{    \}}
-\NormalTok{    result = cv / (vsize {-} }\DecValTok{1}\NormalTok{);}
-    \ControlFlowTok{return}\NormalTok{ result;}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{simulate }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(nrows, simulations, qtvarmin, qtvarmax) \{}
-\NormalTok{    covs }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\SpecialCharTok{*}\NormalTok{simulations), }\AttributeTok{nrow=}\NormalTok{nrows, }\AttributeTok{byrow=}\NormalTok{T)}
-\NormalTok{    corr }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\SpecialCharTok{*}\NormalTok{simulations), }\AttributeTok{nrow=}\NormalTok{nrows, }\AttributeTok{byrow=}\NormalTok{T)}
-    \ControlFlowTok{for}\NormalTok{ (s }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{simulations) \{}
-\NormalTok{        pvtapps }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\SpecialCharTok{*}\DecValTok{2}\NormalTok{),}\AttributeTok{nrow=}\NormalTok{nrows,}\AttributeTok{byrow=}\NormalTok{T)}
-\NormalTok{        pvtapps[,}\DecValTok{2}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{runif}\NormalTok{(nrows, }\AttributeTok{min=}\NormalTok{qtvarmin, }\AttributeTok{max=}\NormalTok{qtvarmax)}
-        \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{nrows) \{}
-\NormalTok{            pvtapps[,}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\SpecialCharTok{{-}}\NormalTok{i), }\FunctionTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{, i))}
-\NormalTok{            covs[i,s] }\OtherTok{\textless{}{-}} \FunctionTok{rcpp\_cov}\NormalTok{(pvtapps[,}\DecValTok{1}\NormalTok{],pvtapps[,}\DecValTok{2}\NormalTok{])}
-\NormalTok{            corr[i,s] }\OtherTok{\textless{}{-}} \FunctionTok{cor}\NormalTok{(pvtapps[,}\DecValTok{1}\NormalTok{],pvtapps[,}\DecValTok{2}\NormalTok{])}
-\NormalTok{        \}}
-\NormalTok{    \}}
-\NormalTok{    covs }\OtherTok{\textless{}{-}} \FunctionTok{rowMeans}\NormalTok{(covs)}
-\NormalTok{    corr }\OtherTok{\textless{}{-}} \FunctionTok{rowMeans}\NormalTok{(corr)}
-    \FunctionTok{plot}\NormalTok{(covs)}
-    \FunctionTok{plot}\NormalTok{(corr)}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \KeywordTok{using} \BuiltInTok{Random}
 \KeywordTok{using}\NormalTok{ Statistics}
 \KeywordTok{using}\NormalTok{ Plots}
@@ -299,7 +256,7 @@ covariance and correlation change and plot it.
 \CommentTok{\#\textgreater{} simulation\_binaries (generic function with 1 method)}
 
 \NormalTok{(covsrowmeans}\OperatorTok{,}\NormalTok{ corrrowmeans) }\OperatorTok{=}\NormalTok{ simulation\_binaries(}\FloatTok{1000}\OperatorTok{,}\FloatTok{10}\NormalTok{)}
-\CommentTok{\#\textgreater{} ([3.583583583583582e{-}5, {-}0.0016300300300300303, {-}0.0002928928928928925, {-}0.000357157157157158, {-}0.0003213213213213214, 0.0007155155155155166, {-}0.00014954954954954879, {-}0.00031391391391391593, {-}0.0012790790790790795, {-}0.0013433433433433437  …  0.0007785785785785676, {-}0.00018658658658663333, 0.00024964964964965895, 8.528528528528477e{-}5, 0.00012112112112111274, 0.0008576576576575909, 0.0017943943943943565, 0.0020304304304304276, 0.0014656656656656442, 0.0], [0.00041737076695843754, {-}0.012468513711459324, {-}0.0017170205698509584, {-}0.0017233499648337577, {-}0.0013715929101378158, 0.0033940128444228035, {-}0.0004065513792433278, {-}0.0010916111304637426, {-}0.004587587632131225, {-}0.00462563855172213  …  0.0028469660340631462, {-}0.0007024652841431803, 0.0010091728089214875, 0.000382864299558781, 0.0007006259270454843, 0.004836476209667777, 0.011412759789844412, 0.015796818667065025, 0.016153743597085126, NaN])}
+\CommentTok{\#\textgreater{} ([0.0010017017017017015, 0.0014028028028028028, 0.003405505505505505, 0.003506306306306306, 0.004207707707707709, 0.002506706706706707, 0.0031080080080080072, 0.002107707707707706, 0.0015078078078078069, 0.0015085085085085096  …  {-}0.0005068068068068001, {-}5.605605605650543e{-}6, {-}0.0015064064064064472, {-}0.003307507507507432, {-}0.0019054054054054308, {-}0.0030058058058058, {-}0.002604704704704662, {-}0.0015029029029029006, 0.00039969969969968886, 0.0], [0.011186377434146732, 0.01098812322083913, 0.021734554686755263, 0.019331886671104952, 0.020824334298058127, 0.011275131430774597, 0.0129550701915489, 0.008199471552472644, 0.005531330252149941, 0.005301182117038004  …  {-}0.0016744755288694859, 0.00020191392424942083, {-}0.006041959200638244, {-}0.014712430791325847, {-}0.009227840727552918, {-}0.016462775536836442, {-}0.016329424146239772, {-}0.011513397709376278, 0.004495568869898365, NaN])}
 \end{Highlighting}
 \end{Shaded}
 
@@ -310,7 +267,7 @@ covariance and correlation change and plot it.
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{./figures/unnamed-chunk-12-1.pdf}
+\includegraphics{./figures/unnamed-chunk-10-1.pdf}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -319,7 +276,7 @@ covariance and correlation change and plot it.
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{./figures/unnamed-chunk-12-2.pdf}
+\includegraphics{./figures/unnamed-chunk-10-2.pdf}
 
 \hypertarget{what-information-does-the-sample-covariance-provide}{%
 \subsection{What information does the sample covariance
