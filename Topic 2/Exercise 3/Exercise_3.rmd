@@ -11,6 +11,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "./figures/"
 )
+knitr::knit_engines$set(julia = JuliaCall::eng_juliacall)
 ```
 
 
@@ -117,14 +118,40 @@ simulate <- function(nrows, simulations, qtvarmin, qtvarmax) {
 }
 ```
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-simulate(1000,1000,0,2000)
+```{julia}
+using Random
+using Statistics
+using Plots
+
+function simulation_binaries(nrows, simulations) 
+    covs = zeros(Float64, nrows, simulations)
+    corr = zeros(Float64, nrows, simulations)
+    for s in 1:simulations
+        pvtapps = zeros(Float64, nrows, 2)
+        pvtapps[:,2] = rand(1:10,nrows)
+        for i in 1:nrows
+            pvtapps[:,1] = vcat(zeros(nrows-i,1), ones(i,1))
+            covs[i,s] = cov(pvtapps[:,1],pvtapps[:,2])
+            corr[i,s] = cor(pvtapps[:,1],pvtapps[:,2])
+        end
+    end
+    covsrowmeans = zeros(Float64, nrows)
+    corrrowmeans = zeros(Float64, nrows)
+    for i in 1:nrows
+        covsrowmeans[i] = mean(covs[i,:])
+        corrrowmeans[i] = mean(corr[i,:])
+    end
+    return covsrowmeans, corrrowmeans
+end
+
+(covsrowmeans, corrrowmeans) = simulation_binaries(1000,10)
 ```
 
-Trying using a variable with both positive and negative values as quantitative variable vs our binary variable
-
-```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
-simulate(1000,50,-30000,30000)
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covsrowmeans <- JuliaCall::julia_eval("covsrowmeans")
+plot(covsrowmeans)
+corrrowmeans <- JuliaCall::julia_eval("corrrowmeans")
+plot(corrrowmeans)
 ```
 
 ## What information does the sample covariance provide?

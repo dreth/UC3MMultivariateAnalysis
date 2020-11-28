@@ -2,7 +2,9 @@ using Random
 using Statistics
 using Plots
 
-function simulation(nrows, simulations) 
+gr()
+
+function simulation_binaries(nrows, simulations) 
     covs = zeros(Float64, nrows, simulations)
     corr = zeros(Float64, nrows, simulations)
     for s in 1:simulations
@@ -17,12 +19,13 @@ function simulation(nrows, simulations)
     covsrowmeans = zeros(Float64, nrows)
     corrrowmeans = zeros(Float64, nrows)
     for i in 1:nrows
-        covsrowmeans[i] = sum(covs[i,:])
-        corrrowmeans[i] = sum(corr[i,:])
+        covsrowmeans[i] = mean(covs[i,:])
+        corrrowmeans[i] = mean(corr[i,:])
     end
     p1 = plot(covsrowmeans)
     p2 = plot(corrrowmeans)
-    plot(p1,p2, layout = (2,1)) 
+    plot(p1,p2, layout = (2,1), legend=false, title="nrows=$nrows, simulations=$simulations") 
 end
 
-simulation(400,3000)
+simulation_binaries(1000,100)
+
