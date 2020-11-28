@@ -117,6 +117,7 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \KeywordTok{library}\NormalTok{(dplyr)}
+\KeywordTok{library}\NormalTok{(Rcpp)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -156,17 +157,14 @@ exercise}\label{importing-data-as-described-by-exercise}}
 \begin{Highlighting}[]
 \NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(data)}
 \NormalTok{cov_matrix}
+\CommentTok{#>                   Private          Apps        Accept       Enroll  F.Undergrad}
+\CommentTok{#> Private         0.1986559     -745.3552     -519.2042    -235.1942    -1330.764}
+\CommentTok{#> Apps         -745.3552439 14978459.5301  8949859.8119 3045255.9876 15289702.474}
+\CommentTok{#> Accept       -519.2042169  8949859.8119  6007959.6988 2076267.7627 10393582.435}
+\CommentTok{#> Enroll       -235.1942393  3045255.9876  2076267.7627  863368.3923  4347529.884}
+\CommentTok{#> F.Undergrad -1330.7637175 15289702.4742 10393582.4355 4347529.8841 23526579.326}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{verbatim}
-##                   Private          Apps        Accept       Enroll  F.Undergrad
-## Private         0.1986559     -745.3552     -519.2042    -235.1942    -1330.764
-## Apps         -745.3552439 14978459.5301  8949859.8119 3045255.9876 15289702.474
-## Accept       -519.2042169  8949859.8119  6007959.6988 2076267.7627 10393582.435
-## Enroll       -235.1942393  3045255.9876  2076267.7627  863368.3923  4347529.884
-## F.Undergrad -1330.7637175 15289702.4742 10393582.4355 4347529.8841 23526579.326
-\end{verbatim}
 
 \newpage
 
@@ -177,17 +175,14 @@ exercise}\label{importing-data-as-described-by-exercise}}
 \begin{Highlighting}[]
 \NormalTok{corr_matrix <-}\StringTok{ }\KeywordTok{cov2cor}\NormalTok{(cov_matrix)}
 \NormalTok{corr_matrix}
+\CommentTok{#>                Private       Apps     Accept     Enroll F.Undergrad}
+\CommentTok{#> Private      1.0000000 -0.4320947 -0.4752520 -0.5679078  -0.6155605}
+\CommentTok{#> Apps        -0.4320947  1.0000000  0.9434506  0.8468221   0.8144906}
+\CommentTok{#> Accept      -0.4752520  0.9434506  1.0000000  0.9116367   0.8742233}
+\CommentTok{#> Enroll      -0.5679078  0.8468221  0.9116367  1.0000000   0.9646397}
+\CommentTok{#> F.Undergrad -0.6155605  0.8144906  0.8742233  0.9646397   1.0000000}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{verbatim}
-##                Private       Apps     Accept     Enroll F.Undergrad
-## Private      1.0000000 -0.4320947 -0.4752520 -0.5679078  -0.6155605
-## Apps        -0.4320947  1.0000000  0.9434506  0.8468221   0.8144906
-## Accept      -0.4752520  0.9434506  1.0000000  0.9116367   0.8742233
-## Enroll      -0.5679078  0.8468221  0.9116367  1.0000000   0.9646397
-## F.Undergrad -0.6155605  0.8144906  0.8742233  0.9646397   1.0000000
-\end{verbatim}
 
 \hypertarget{experimenting-a-little-bit-with-the-private-variable}{%
 \paragraph{Experimenting a little bit with the private
@@ -208,78 +203,92 @@ covariances and correlations
 \begin{Highlighting}[]
 \NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(data)}
 \NormalTok{cov_matrix}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-##                  Private         Apps       Accept       Enroll  F.Undergrad
-## Private        0.1986559 7.453552e+02 5.192042e+02     235.1942     1330.764
-## Apps         745.3552439 1.497846e+07 8.949860e+06 3045255.9876 15289702.474
-## Accept       519.2042169 8.949860e+06 6.007960e+06 2076267.7627 10393582.435
-## Enroll       235.1942393 3.045256e+06 2.076268e+06  863368.3923  4347529.884
-## F.Undergrad 1330.7637175 1.528970e+07 1.039358e+07 4347529.8841 23526579.326
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
+\CommentTok{#>                  Private         Apps       Accept       Enroll  F.Undergrad}
+\CommentTok{#> Private        0.1986559 7.453552e+02 5.192042e+02     235.1942     1330.764}
+\CommentTok{#> Apps         745.3552439 1.497846e+07 8.949860e+06 3045255.9876 15289702.474}
+\CommentTok{#> Accept       519.2042169 8.949860e+06 6.007960e+06 2076267.7627 10393582.435}
+\CommentTok{#> Enroll       235.1942393 3.045256e+06 2.076268e+06  863368.3923  4347529.884}
+\CommentTok{#> F.Undergrad 1330.7637175 1.528970e+07 1.039358e+07 4347529.8841 23526579.326}
 \NormalTok{corr_matrix <-}\StringTok{ }\KeywordTok{cov2cor}\NormalTok{(cov_matrix)}
 \NormalTok{corr_matrix}
+\CommentTok{#>               Private      Apps    Accept    Enroll F.Undergrad}
+\CommentTok{#> Private     1.0000000 0.4320947 0.4752520 0.5679078   0.6155605}
+\CommentTok{#> Apps        0.4320947 1.0000000 0.9434506 0.8468221   0.8144906}
+\CommentTok{#> Accept      0.4752520 0.9434506 1.0000000 0.9116367   0.8742233}
+\CommentTok{#> Enroll      0.5679078 0.8468221 0.9116367 1.0000000   0.9646397}
+\CommentTok{#> F.Undergrad 0.6155605 0.8144906 0.8742233 0.9646397   1.0000000}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{verbatim}
-##               Private      Apps    Accept    Enroll F.Undergrad
-## Private     1.0000000 0.4320947 0.4752520 0.5679078   0.6155605
-## Apps        0.4320947 1.0000000 0.9434506 0.8468221   0.8144906
-## Accept      0.4752520 0.9434506 1.0000000 0.9116367   0.8742233
-## Enroll      0.5679078 0.8468221 0.9116367 1.0000000   0.9646397
-## F.Undergrad 0.6155605 0.8144906 0.8742233 0.9646397   1.0000000
-\end{verbatim}
 
 We get the same numbers with reversed signs.
 
 \newpage
 
-Let's try having the same amount of 1s and 0s and see how correlation
-and covariance change:
+Let's play with the amount of 1s and 0s in Private and compare it to a
+simulated variable with only positive values in order to see how the
+covariance and correlation change and plot it.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{data}\OperatorTok{$}\NormalTok{Private <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,}\KeywordTok{length}\NormalTok{(data}\OperatorTok{$}\NormalTok{Private)}\OperatorTok{/}\DecValTok{2} \OperatorTok{+}\StringTok{ }\DecValTok{1}\NormalTok{), }\KeywordTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{,}\KeywordTok{length}\NormalTok{(data}\OperatorTok{$}\NormalTok{Private)}\OperatorTok{/}\DecValTok{2}\NormalTok{))}
+\PreprocessorTok{#include }\ImportTok{<Rcpp.h>}
+\PreprocessorTok{#include }\ImportTok{<math.h>}
+\KeywordTok{using} \KeywordTok{namespace}\NormalTok{ Rcpp;}
+
+\CommentTok{// [[Rcpp::export]]}
+\DataTypeTok{double}\NormalTok{ rcpp_cov(NumericVector v1, NumericVector v2) \{}
+    \DataTypeTok{double}\NormalTok{ vsize = v1.size();}
+    \DataTypeTok{double}\NormalTok{ cv = }\DecValTok{0}\NormalTok{;}
+    \DataTypeTok{double}\NormalTok{ v1mean = mean(v1);}
+    \DataTypeTok{double}\NormalTok{ v2mean = mean(v2);}
+    \DataTypeTok{double}\NormalTok{ result;}
+    \ControlFlowTok{for}\NormalTok{ (}\DataTypeTok{unsigned}\NormalTok{ i=}\DecValTok{0}\NormalTok{; i<vsize; i++) \{}
+\NormalTok{        cv = cv + (v1[i] - v1mean)*(v2[i] - v2mean);}
+\NormalTok{    \}}
+\NormalTok{    result = cv / (vsize - }\DecValTok{1}\NormalTok{);}
+    \ControlFlowTok{return}\NormalTok{ result;}
+\NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(data)}
-\NormalTok{cov_matrix}
+\NormalTok{simulate <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(nrows, simulations, qtvarmin, qtvarmax) \{}
+\NormalTok{    covs <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\OperatorTok{*}\NormalTok{simulations), }\DataTypeTok{nrow=}\NormalTok{nrows, }\DataTypeTok{byrow=}\NormalTok{T)}
+\NormalTok{    corr <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\OperatorTok{*}\NormalTok{simulations), }\DataTypeTok{nrow=}\NormalTok{nrows, }\DataTypeTok{byrow=}\NormalTok{T)}
+    \ControlFlowTok{for}\NormalTok{ (s }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\NormalTok{simulations) \{}
+\NormalTok{        pvtapps <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\OperatorTok{*}\DecValTok{2}\NormalTok{),}\DataTypeTok{nrow=}\NormalTok{nrows,}\DataTypeTok{byrow=}\NormalTok{T)}
+\NormalTok{        pvtapps[,}\DecValTok{2}\NormalTok{] <-}\StringTok{ }\KeywordTok{runif}\NormalTok{(nrows, }\DataTypeTok{min=}\NormalTok{qtvarmin, }\DataTypeTok{max=}\NormalTok{qtvarmax)}
+        \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\NormalTok{nrows) \{}
+\NormalTok{            pvtapps[,}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{,nrows}\OperatorTok{-}\NormalTok{i), }\KeywordTok{rep}\NormalTok{(}\DecValTok{1}\NormalTok{, i))}
+\NormalTok{            covs[i,s] <-}\StringTok{ }\KeywordTok{rcpp_cov}\NormalTok{(pvtapps[,}\DecValTok{1}\NormalTok{],pvtapps[,}\DecValTok{2}\NormalTok{])}
+\NormalTok{            corr[i,s] <-}\StringTok{ }\KeywordTok{rcpp_cov}\NormalTok{(pvtapps[,}\DecValTok{1}\NormalTok{],pvtapps[,}\DecValTok{2}\NormalTok{])}
+\NormalTok{        \}}
+\NormalTok{    \}}
+\NormalTok{    covs <-}\StringTok{ }\KeywordTok{rowMeans}\NormalTok{(covs)}
+\NormalTok{    corr <-}\StringTok{ }\KeywordTok{rowMeans}\NormalTok{(corr)}
+    \KeywordTok{plot}\NormalTok{(covs)}
+    \KeywordTok{plot}\NormalTok{(corr)}
+\NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{verbatim}
-##                 Private         Apps       Accept       Enroll  F.Undergrad
-## Private       0.2503218 3.387465e+02 2.189999e+02 8.109728e+01 4.358092e+02
-## Apps        338.7465453 1.497846e+07 8.949860e+06 3.045256e+06 1.528970e+07
-## Accept      218.9998740 8.949860e+06 6.007960e+06 2.076268e+06 1.039358e+07
-## Enroll       81.0972764 3.045256e+06 2.076268e+06 8.633684e+05 4.347530e+06
-## F.Undergrad 435.8092186 1.528970e+07 1.039358e+07 4.347530e+06 2.352658e+07
-\end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{corr_matrix <-}\StringTok{ }\KeywordTok{cov2cor}\NormalTok{(cov_matrix)}
-\NormalTok{corr_matrix}
+\KeywordTok{simulate}\NormalTok{(}\DecValTok{1000}\NormalTok{,}\DecValTok{1000}\NormalTok{,}\DecValTok{0}\NormalTok{,}\DecValTok{2000}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
-\begin{verbatim}
-##               Private      Apps    Accept    Enroll F.Undergrad
-## Private     1.0000000 0.1749412 0.1785793 0.1744452   0.1795840
-## Apps        0.1749412 1.0000000 0.9434506 0.8468221   0.8144906
-## Accept      0.1785793 0.9434506 1.0000000 0.9116367   0.8742233
-## Enroll      0.1744452 0.8468221 0.9116367 1.0000000   0.9646397
-## F.Undergrad 0.1795840 0.8144906 0.8742233 0.9646397   1.0000000
-\end{verbatim}
+\includegraphics{./figures/unnamed-chunk-11-1.pdf}
+\includegraphics{./figures/unnamed-chunk-11-2.pdf}
+
+Trying using a variable with both positive and negative values as
+quantitative variable vs our binary variable
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{simulate}\NormalTok{(}\DecValTok{1000}\NormalTok{,}\DecValTok{50}\NormalTok{,}\OperatorTok{-}\DecValTok{30000}\NormalTok{,}\DecValTok{30000}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{what-information-does-the-sample-covariance-provide}{%
 \subsection{What information does the sample covariance
@@ -294,38 +303,5 @@ be relatively small and will not provide much information.
 \hypertarget{what-information-does-the-sample-correlation-provide}{%
 \subsection{What information does the sample correlation
 provide?}\label{what-information-does-the-sample-correlation-provide}}
-
-\hypertarget{scatter-plot-of-our-quantitative-variables-and-the-private-binary-variable}{%
-\subsubsection{Scatter plot of our quantitative variables and the
-Private binary
-variable}\label{scatter-plot-of-our-quantitative-variables-and-the-private-binary-variable}}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{model =}\StringTok{ }\KeywordTok{lm}\NormalTok{(Private }\OperatorTok{~}\StringTok{ }\NormalTok{Apps, }\DataTypeTok{data=}\NormalTok{d)}
-\KeywordTok{summary}\NormalTok{(model)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## 
-## Call:
-## lm(formula = Private ~ Apps, data = d)
-## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -1.5167 -0.2087 -0.1613  0.1581  0.8649 
-## 
-## Coefficients:
-##              Estimate Std. Error t value Pr(>|t|)    
-## (Intercept) 1.235e-01  1.826e-02    6.76 2.71e-11 ***
-## Apps        4.976e-05  3.731e-06   13.34  < 2e-16 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 0.4022 on 775 degrees of freedom
-## Multiple R-squared:  0.1867, Adjusted R-squared:  0.1857 
-## F-statistic: 177.9 on 1 and 775 DF,  p-value: < 2.2e-16
-\end{verbatim}
 
 \end{document}

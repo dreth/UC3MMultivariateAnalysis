@@ -5,10 +5,20 @@ date: "November 28th, 2020"
 output: 'pdf_document'
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "./figures/"
+)
+```
+
+
 #### Importing libraries
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 library(dplyr)
+library(Rcpp)
 ```
 
 #### Importing data as described by exercise
@@ -66,17 +76,55 @@ We get the same numbers with reversed signs.
 
 \newpage
 
-Let's try having the same amount of 1s and 0s and see how correlation and covariance change:
+Let's play with the amount of 1s and 0s in Private and compare it to a simulated variable with only positive values in order to see how the covariance and correlation change and plot it.
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-data$Private <- c(rep(0,length(data$Private)/2 + 1), rep(1,length(data$Private)/2))
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double rcpp_cov(NumericVector v1, NumericVector v2) {
+    double vsize = v1.size();
+    double cv = 0;
+    double v1mean = mean(v1);
+    double v2mean = mean(v2);
+    double result;
+    for (unsigned i=0; i<vsize; i++) {
+        cv = cv + (v1[i] - v1mean)*(v2[i] - v2mean);
+    }
+    result = cv / (vsize - 1);
+    return result;
+}
 ```
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-cov_matrix <- cov(data)
-cov_matrix
-corr_matrix <- cov2cor(cov_matrix)
-corr_matrix
+simulate <- function(nrows, simulations, qtvarmin, qtvarmax) {
+    covs <- matrix(rep(0,nrows*simulations), nrow=nrows, byrow=T)
+    corr <- matrix(rep(0,nrows*simulations), nrow=nrows, byrow=T)
+    for (s in 1:simulations) {
+        pvtapps <- matrix(rep(0,nrows*2),nrow=nrows,byrow=T)
+        pvtapps[,2] <- runif(nrows, min=qtvarmin, max=qtvarmax)
+        for (i in 1:nrows) {
+            pvtapps[,1] <- c(rep(0,nrows-i), rep(1, i))
+            covs[i,s] <- rcpp_cov(pvtapps[,1],pvtapps[,2])
+            corr[i,s] <- cor(pvtapps[,1],pvtapps[,2])
+        }
+    }
+    covs <- rowMeans(covs)
+    corr <- rowMeans(corr)
+    plot(covs)
+    plot(corr)
+}
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+simulate(1000,1000,0,2000)
+```
+
+Trying using a variable with both positive and negative values as quantitative variable vs our binary variable
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+simulate(1000,50,-30000,30000)
 ```
 
 ## What information does the sample covariance provide?
@@ -89,9 +137,3 @@ We know that because the Private variable (binary variable) has only 2 possible 
 
 
 
-### Scatter plot of our quantitative variables and the Private binary variable
-
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-model = lm(Private ~ Apps, data=d)
-summary(model)
-```
