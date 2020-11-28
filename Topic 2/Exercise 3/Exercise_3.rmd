@@ -1,7 +1,7 @@
 ---
 title: 'Topic 2: Exercise 1'
 author: "Daniel Alonso"
-date: "November 25th, 2020"
+date: "November 28th, 2020"
 output: 'pdf_document'
 ---
 
