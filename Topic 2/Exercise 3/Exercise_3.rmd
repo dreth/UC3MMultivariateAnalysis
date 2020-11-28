@@ -77,43 +77,88 @@ We get the same numbers with reversed signs.
 
 \newpage
 
-Let's play with the amount of 1s and 0s in Private and compare it to a simulated variable with only positive values in order to see how the covariance and correlation change and plot it.
+We define the following function (in julia) to help our understanding:
+    
+Takes the arguments:
+
+    - nrows: number of data to simulate (amount of rows)
+    - simulations: number of different times to simulate and average the results
+    - fixed_value_col: boolean parameter with true -> assigns a set of values between mins[1] and maxs[1] (other 2 parameters)
+    - reverse: 
 
 ```{julia}
 using Random
 using Statistics
 using Plots
+gr()
 
-function simulation_binaries(nrows, simulations) 
+function simulation_general(nrows, simulations; fixed_value_col=false, reverse=false, sim_binaries=true, mins=[1,100], maxs=[10,10000]) 
+    # cov and corr matrixes
     covs = zeros(Float64, nrows, simulations)
     corr = zeros(Float64, nrows, simulations)
+
+    # loop
     for s in 1:simulations
-        pvtapps = zeros(Float64, nrows, 2)
-        pvtapps[:,2] = rand(1:10,nrows)
+        pvtapps = zeros(Float64, nrows, 3)
+        if sim_binaries == false
+            pvtapps[:,1] = rand(0:1, nrows)
+        end
+
+        # random numbers column (quant variable)
+        if fixed_value_col == true
+            pvtapps[:,2] = rand(mins[1]:maxs[1],nrows)
+        else
+            if reverse == false
+                pvtapps[:,2] = rand(mins[1]:maxs[1],nrows)
+                pvtapps[:,3] = rand(mins[2]:maxs[2],nrows)
+            else 
+                pvtapps[:,2] = rand(mins[2]:maxs[2],nrows)
+                pvtapps[:,3] = rand(mins[1]:maxs[1],nrows)
+            end
+        end
+
+        # loop for changing values
         for i in 1:nrows
-            pvtapps[:,1] = vcat(zeros(nrows-i,1), ones(i,1))
+
+            if sim_binaries == true
+                pvtapps[1:i,1] = ones(i)
+            end
+
+            pvtapps[1:i,2] = pvtapps[1:i,3]
+
+            # calculate corr and cov
             covs[i,s] = cov(pvtapps[:,1],pvtapps[:,2])
             corr[i,s] = cor(pvtapps[:,1],pvtapps[:,2])
         end
     end
-    covsrowmeans = zeros(Float64, nrows)
-    corrrowmeans = zeros(Float64, nrows)
+
+    # results
+    covsrows = zeros(Float64, nrows)
+    corrrows = zeros(Float64, nrows)
     for i in 1:nrows
-        covsrowmeans[i] = mean(covs[i,:])
-        corrrowmeans[i] = mean(corr[i,:])
+        covsrows[i] = mean(covs[i,:])
+        corrrows[i] = mean(corr[i,:])
     end
-    return covsrowmeans, corrrowmeans
+
+    # return matrixes
+    return covsrows, corrrows
 end
 
-(covsrowmeans, corrrowmeans) = simulation_binaries(1000,10)
+covsrows, corrrows = simulation_general(500,100, reverse=true, sim_binaries=true);
 ```
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-covsrowmeans <- JuliaCall::julia_eval("covsrowmeans")
-plot(covsrowmeans)
-corrrowmeans <- JuliaCall::julia_eval("corrrowmeans")
-plot(corrrowmeans)
+covsrows <- JuliaCall::julia_eval("covsrows")
+plot(covsrows)
+corrrows <- JuliaCall::julia_eval("corrrows")
+plot(corrrows)
 ```
+
+# OBSERVATIONS
+
+Now let's play around changing the size of the values that correspond in the quantitative variable to 1s or 0s in the binary column.
+
+
 
 ## What information does the sample covariance provide?
 
