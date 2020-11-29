@@ -105,8 +105,8 @@ using Statistics
 using Plots
 gr()
 
-function simulation_general(nrows, simulations; fixed_value_col=false, reverse=false,
-                             sim_binaries=true, mins=[1,100], maxs=[10,10000]) 
+function simulation_general(nrows, simulations; fixed_value_col=false, 
+    reverse=false, sim_binaries=true, mins=[1,100], maxs=[10,10000]) 
     # cov and corr matrixes
     covs = zeros(Float64, nrows, simulations)
     corr = zeros(Float64, nrows, simulations)
@@ -126,20 +126,23 @@ function simulation_general(nrows, simulations; fixed_value_col=false, reverse=f
                 pvtapps[:,2] = rand(mins[1]:maxs[1],nrows)
                 pvtapps[:,3] = rand(mins[2]:maxs[2],nrows)
             else 
-                pvtapps[:,2] = rand(mins[2]:maxs[2],nrows)
                 pvtapps[:,3] = rand(mins[1]:maxs[1],nrows)
+                pvtapps[:,2] = rand(mins[2]:maxs[2],nrows)
             end
         end
 
         # loop for changing values
         for i in 1:nrows
 
+            # rolling binary proportions
             if sim_binaries == true
                 pvtapps[1:i,1] = ones(i)
             end
 
-            pvtapps[1:i,2] = pvtapps[1:i,3]
-
+            # replacing values by larger/smaller ones in col2
+            if fixed_value_col == false
+                pvtapps[1:i,2] = pvtapps[1:i,3]
+            end
             # calculate corr and cov
             covs[i,s] = cov(pvtapps[:,1],pvtapps[:,2])
             corr[i,s] = cor(pvtapps[:,1],pvtapps[:,2])
@@ -165,7 +168,9 @@ covsrows, corrrows = simulation_general(500,200, reverse=false, sim_binaries=tru
 
 \newpage
 
-#### Covariance plot with 500 data points and 100 simulations averaged
+### Covariance plots with 500 data points and 200 simulations averaged
+
+#### First scenario: larger numbers correspond to 1s
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 covsrows <- JuliaCall::julia_eval("covsrows")
@@ -178,6 +183,8 @@ Clearly, as long as values in the quantitative variable (corresponding to 1 in t
 
 \newpage
 
+#### Second scenario: larger numbers correspond to 0s
+
 The opposite thing would happen if we reverse the values, so then we would have the values corresponding to the binary variable's 1 to the smaller values (1-10) and larger values (100-10000) corresponding to the binary variable's 0.
 
 ```{julia}
@@ -189,10 +196,16 @@ covsrows_rev <- JuliaCall::julia_eval("covsrows_rev")
 plot(covsrows_rev)
 ```
 
-If we only simulate without considering the binary variable, so basically keeping a somewhat even amount of ones and zeros in it and randomizing the values of the quantitative variable, then we get no discernible pattern:
+\newpage
+
+#### Third scenario: just random data and equal proportion of 0s and 1s
+
+Here we simulated 700 rows in 500 simulations to have a larger sample to average the rows with.
+
+If we only simulate without considering the binary variable, so basically keeping a somewhat even amount of ones and zeros in it and randomizing the values of the quantitative variable, then we get no discernible pattern other than (at times) drops around the middle (when proportions of 0s and 1s are the same) or in the extremes (when the binary variable is only 1 or 0):
 
 ```{julia}
-rand_covrows, rand_corrrows = simulation_general(400,1000, 
+rand_covrows, rand_corrrows = simulation_general(700,500, 
                                         sim_binaries=false, fixed_value_col=false);
 ```
 
@@ -201,32 +214,141 @@ rand_covrows <- JuliaCall::julia_eval("rand_covrows")
 plot(rand_covrows)
 ```
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-covsrows_rev <- JuliaCall::julia_eval("covsrows_rev")
-plot(covsrows_rev)
-```
+\newpage
 
-#### Correlation plot with 500 data points and 100 simulations averaged
+### Correlation plot with 500 data points and 200 simulations averaged
+
+#### First scenario: larger numbers correspond to 1s
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 corrrows <- JuliaCall::julia_eval("corrrows")
 plot(corrrows)
 ```
 
+here we can see that while values for the 1s are higher than values for the 0s and while the proportion of 0s remains larger than the proportion of 1s, the correlation stays relatively high. When the proportion of 1s becomes higher than the proportion of 0s, then the correlation starts to drop and quickly approaches zero.
 
-# OBSERVATIONS
-
-Now let's play around changing the size of the values that correspond in the quantitative variable to 1s or 0s in the binary column.
-
-
-
-## What information does the sample covariance provide?
-
-We know that because the Private variable (binary variable) has only 2 possible values, its covariance with other variables is always going to be relatively small and will not provide much information.
+The correlation has its maximum value when the binary variable is basically all zeros (only a single 1 in it) and reaches its minimum value when all the values in in the binary variable are 1s.
 
 \newpage
 
+#### Second scenario: larger numbers correspond to 0s
+
+Something quite similar but contrary to the previous situation happens with correlation when the opposite scenario occurs. Basically, our minimum value will be the highest correlation (as all the correlations here are negative). The highest correlation (minimum value in the plot for the y axis) happens when all our data points in the binary variable are 1s and all the values for the quantitative variable have been replaced by higher numbers (as here, the higher values in the quantitative variables correspond to the zeros in the binary variable).
+
+The minimum correlation (~0) is reached right at the start, when all the values for the binary variable are 0s (except for a single value).
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+corrrows_rev <- JuliaCall::julia_eval("corrrows_rev")
+plot(corrrows_rev)
+```
+
+\newpage
+
+#### Third scenario: just random data and equal proportion of 0s and 1s
+
+For randomized data with different values in every simulation we get essentially the same thing we saw with covariance. No discernible pattern and the plot will change every time it's made, as it's *just random data* averaged.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+rand_corrrows <- JuliaCall::julia_eval("rand_corrrows")
+plot(rand_corrrows)
+```
+
+\newpage
+
+#### Fourth scenario: quantitative variable with only negative values
+
+Very similarly to the scenario with only positive values but the opposite. So basically our correlations are negative and we start with a lower correlation to increase rapidly and then we drop back again rapidly after the proportion of 1s and 0s is around 75% 1s and 25% 0s.
+
+```{julia}
+_, corrrows_neg = simulation_general(500,200, mins=[-100,-1000], maxs=[-10,-200]);
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+corrrows_neg <- JuliaCall::julia_eval("corrrows_neg")
+plot(corrrows_neg)
+```
+
+\newpage
+
+#### Fifth scenario: quantitative variable with only negative values (in reverse)
+
+Essentially the same as the fourth scenario but flipped.
+
+```{julia}
+_, corrrows_neg = simulation_general(500,200, reverse=true, mins=[-100,-1000], maxs=[-10,-200]);
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+corrrows_neg <- JuliaCall::julia_eval("corrrows_neg")
+plot(corrrows_neg)
+```
+
+\newpage
+
+#### Sixth scenario: quantitative variable with both negative and positive values
+
+Very similar to the fourth scenario but correlation drops much faster after the proportion of ones and zeros is about the same and our maximum correlation (~ -0.7) doesn't reach -1 in this case (as it does with the previous one).
+
+```{julia}
+_, corrrows_both = simulation_general(500,200, mins=[-100,-1000], maxs=[10,200]);
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+corrrows_both <- JuliaCall::julia_eval("corrrows_both")
+plot(corrrows_both)
+```
+
+\newpage
+
+#### Seventh scenario: quantitative variable with both negative and positive values (in reverse)
+
+Very similar to the sixth scenario but opposite. In both sixth and seventh scenario, our correlations drop very rapidly when our binary variable is either (nearly) entirely 1s or 0s.
+
+```{julia}
+_, corrrows_both = simulation_general(500,200, reverse=true, mins=[-100,-1000], maxs=[10,200]);
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+corrrows_both <- JuliaCall::julia_eval("corrrows_both")
+plot(corrrows_both)
+```
+
+\newpage
+
+## What information does the sample covariance provide?
+
+From my observations I don't think I can confidently answer this question and say that this might have an interesting deeper *meaning*. I don't really see it as clearly as it would be seen with just 2 ordinary quantitative variables. However, there is definitely a pattern, when higher values correspond to 1s and the proportion of 1s and 0s is relatively even, then we have the maximum covariance we can have, and the opposite will happen in the opposite scenario.
+
+If we have a covariance close to 0 we can say that that it could be (according to my testing) due to:
+
+    - There's a significantly higher amount of 0s or 1s in the binary variable
+
+If we have a covariance that is maximized or minimized (vs other scenarios with a different proportion of 1s and 0s in the binary variable) then it could be due to a few things:
+    
+    - If it's maximized (vs other scenarios):
+        - It could be that the higher values correspond to 1s in the binary variable
+    - If it's minimized (vs other scenarios):
+        - It could be that the lower values correspond to 1s in the binary variable
+
 ## What information does the sample correlation provide?
 
+Similar to covariance, I'm not quite sure if I'm confident enough in my findings to say that I can give a profound meaning to this correlation. But I can point out a few observations:
 
+(using only positive values) If correlation is very high (vs other scenarios) it could be (according to my observations) due to:
 
+    - Higher values in the quantitative variable correspond to 1s in the binary variable and there's 
+    more 0s than 1s in the binary variable (0s represent more than 40% of the observations)
+        - In this case, correlation will be positive
+    - Higher values in the quantitative variables correspond to 0s in the binary variable and there's
+    more 1s than 0s in the binary variable (1s represent more than 40% of the observations)
+        - In this case, correlation will be negative
+
+(using only negative values) If correlation is very high (vs other scenarios) it could be (according to my observations) due to:
+
+    - Same conclusions as with positive values only, however, correlation drops when the total 
+    amount of 1s and 0s replace the other.
+
+(using both positive and negative values) If correlation is very high (vs other scenarios) it could be (according to my observations) due to:
+
+    - Same conclusions as with negative values only, however, max correlation will be lower than 
+    when using only positive or only negative values.

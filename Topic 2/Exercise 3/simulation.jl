@@ -32,11 +32,15 @@ function simulation_general(nrows, simulations; fixed_value_col=false,
         # loop for changing values
         for i in 1:nrows
 
+            # rolling binary proportions
             if sim_binaries == true
                 pvtapps[1:i,1] = ones(i)
             end
 
-            pvtapps[1:i,2] = pvtapps[1:i,3]
+            # replacing values by larger/smaller ones in col2
+            if fixed_value_col == false
+                pvtapps[1:i,2] = pvtapps[1:i,3]
+            end
             # calculate corr and cov
             covs[i,s] = cov(pvtapps[:,1],pvtapps[:,2])
             corr[i,s] = cor(pvtapps[:,1],pvtapps[:,2])
@@ -57,5 +61,5 @@ function simulation_general(nrows, simulations; fixed_value_col=false,
     plot(p1,p2, layout = (2,1), legend=false) 
 end
 
-simulation_general(500,100, reverse=true ,sim_binaries=true)
+simulation_general(500,50,reverse=true, mins=[-100,-1000], maxs=[-10,-200])
 
