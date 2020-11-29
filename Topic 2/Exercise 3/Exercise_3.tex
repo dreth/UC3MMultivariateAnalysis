@@ -1,46 +1,39 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
 \PassOptionsToPackage{hyphens}{url}
 %
-\documentclass[
-]{article}
+\documentclass[]{article}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
   \usepackage{unicode-math}
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
 \fi
-% Use upquote if available, for straight quotes in verbatim environments
+% use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{xcolor}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\usepackage{hyperref}
 \hypersetup{
-  pdftitle={Topic 2: Exercise 1},
-  pdfauthor={Daniel Alonso},
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
-\urlstyle{same} % disable monospaced font for URLs
+            pdftitle={Topic 2: Exercise 1},
+            pdfauthor={Daniel Alonso},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
 \usepackage[margin=1in]{geometry}
 \usepackage{color}
 \usepackage{fancyvrb}
@@ -82,7 +75,7 @@
 \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
 \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\usepackage{graphicx}
+\usepackage{graphicx,grffile}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
 \def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
@@ -91,17 +84,25 @@
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+% set default figure placement to htbp
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\ifluatex
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
+
 
 \title{Topic 2: Exercise 1}
 \author{Daniel Alonso}
@@ -115,8 +116,9 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{library}\NormalTok{(dplyr)}
-\FunctionTok{library}\NormalTok{(Rcpp)}
+\KeywordTok{library}\NormalTok{(dplyr)}
+\KeywordTok{library}\NormalTok{(Rcpp)}
+\KeywordTok{library}\NormalTok{(JuliaCall)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -126,7 +128,7 @@ exercise}\label{importing-data-as-described-by-exercise}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{d }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"../../datasets/Colleges.csv"}\NormalTok{)}
+\NormalTok{d <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"../../datasets/Colleges.csv"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -136,7 +138,7 @@ exercise}\label{importing-data-as-described-by-exercise}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{d}\SpecialCharTok{$}\NormalTok{Private }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(d}\SpecialCharTok{$}\NormalTok{Private }\SpecialCharTok{==} \StringTok{"Yes"}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)}
+\NormalTok{d}\OperatorTok{$}\NormalTok{Private <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(d}\OperatorTok{$}\NormalTok{Private }\OperatorTok{==}\StringTok{ "Yes"}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{0}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -145,7 +147,7 @@ exercise}\label{importing-data-as-described-by-exercise}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{data }\OtherTok{\textless{}{-}}\NormalTok{ d }\SpecialCharTok{\%\textgreater{}\%}\NormalTok{ dplyr}\SpecialCharTok{::}\FunctionTok{select}\NormalTok{(}\StringTok{\textquotesingle{}Private\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Apps\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Accept\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Enroll\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}F.Undergrad\textquotesingle{}}\NormalTok{)}
+\NormalTok{data <-}\StringTok{ }\NormalTok{d }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(}\StringTok{'Private'}\NormalTok{,}\StringTok{'Apps'}\NormalTok{,}\StringTok{'Accept'}\NormalTok{,}\StringTok{'Enroll'}\NormalTok{,}\StringTok{'F.Undergrad'}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -154,14 +156,14 @@ exercise}\label{importing-data-as-described-by-exercise}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{cov\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{cov}\NormalTok{(data)}
-\NormalTok{cov\_matrix}
-\CommentTok{\#\textgreater{}                   Private          Apps        Accept       Enroll  F.Undergrad}
-\CommentTok{\#\textgreater{} Private         0.1986559     {-}745.3552     {-}519.2042    {-}235.1942    {-}1330.764}
-\CommentTok{\#\textgreater{} Apps         {-}745.3552439 14978459.5301  8949859.8119 3045255.9876 15289702.474}
-\CommentTok{\#\textgreater{} Accept       {-}519.2042169  8949859.8119  6007959.6988 2076267.7627 10393582.435}
-\CommentTok{\#\textgreater{} Enroll       {-}235.1942393  3045255.9876  2076267.7627  863368.3923  4347529.884}
-\CommentTok{\#\textgreater{} F.Undergrad {-}1330.7637175 15289702.4742 10393582.4355 4347529.8841 23526579.326}
+\NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(data)}
+\NormalTok{cov_matrix}
+\CommentTok{#>                   Private          Apps        Accept       Enroll  F.Undergrad}
+\CommentTok{#> Private         0.1986559     -745.3552     -519.2042    -235.1942    -1330.764}
+\CommentTok{#> Apps         -745.3552439 14978459.5301  8949859.8119 3045255.9876 15289702.474}
+\CommentTok{#> Accept       -519.2042169  8949859.8119  6007959.6988 2076267.7627 10393582.435}
+\CommentTok{#> Enroll       -235.1942393  3045255.9876  2076267.7627  863368.3923  4347529.884}
+\CommentTok{#> F.Undergrad -1330.7637175 15289702.4742 10393582.4355 4347529.8841 23526579.326}
 \end{Highlighting}
 \end{Shaded}
 
@@ -172,14 +174,14 @@ exercise}\label{importing-data-as-described-by-exercise}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{corr\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{cov2cor}\NormalTok{(cov\_matrix)}
-\NormalTok{corr\_matrix}
-\CommentTok{\#\textgreater{}                Private       Apps     Accept     Enroll F.Undergrad}
-\CommentTok{\#\textgreater{} Private      1.0000000 {-}0.4320947 {-}0.4752520 {-}0.5679078  {-}0.6155605}
-\CommentTok{\#\textgreater{} Apps        {-}0.4320947  1.0000000  0.9434506  0.8468221   0.8144906}
-\CommentTok{\#\textgreater{} Accept      {-}0.4752520  0.9434506  1.0000000  0.9116367   0.8742233}
-\CommentTok{\#\textgreater{} Enroll      {-}0.5679078  0.8468221  0.9116367  1.0000000   0.9646397}
-\CommentTok{\#\textgreater{} F.Undergrad {-}0.6155605  0.8144906  0.8742233  0.9646397   1.0000000}
+\NormalTok{corr_matrix <-}\StringTok{ }\KeywordTok{cov2cor}\NormalTok{(cov_matrix)}
+\NormalTok{corr_matrix}
+\CommentTok{#>                Private       Apps     Accept     Enroll F.Undergrad}
+\CommentTok{#> Private      1.0000000 -0.4320947 -0.4752520 -0.5679078  -0.6155605}
+\CommentTok{#> Apps        -0.4320947  1.0000000  0.9434506  0.8468221   0.8144906}
+\CommentTok{#> Accept      -0.4752520  0.9434506  1.0000000  0.9116367   0.8742233}
+\CommentTok{#> Enroll      -0.5679078  0.8468221  0.9116367  1.0000000   0.9646397}
+\CommentTok{#> F.Undergrad -0.6155605  0.8144906  0.8742233  0.9646397   1.0000000}
 \end{Highlighting}
 \end{Shaded}
 
@@ -192,30 +194,30 @@ covariances and correlations
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{d }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"../../datasets/Colleges.csv"}\NormalTok{)}
-\NormalTok{d}\SpecialCharTok{$}\NormalTok{Private }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(d}\SpecialCharTok{$}\NormalTok{Private }\SpecialCharTok{==} \StringTok{"Yes"}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{)}
-\NormalTok{data }\OtherTok{\textless{}{-}}\NormalTok{ d }\SpecialCharTok{\%\textgreater{}\%}\NormalTok{ dplyr}\SpecialCharTok{::}\FunctionTok{select}\NormalTok{(}\StringTok{\textquotesingle{}Private\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Apps\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Accept\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Enroll\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}F.Undergrad\textquotesingle{}}\NormalTok{)}
+\NormalTok{d <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"../../datasets/Colleges.csv"}\NormalTok{)}
+\NormalTok{d}\OperatorTok{$}\NormalTok{Private <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(d}\OperatorTok{$}\NormalTok{Private }\OperatorTok{==}\StringTok{ "Yes"}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{)}
+\NormalTok{data <-}\StringTok{ }\NormalTok{d }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{select}\NormalTok{(}\StringTok{'Private'}\NormalTok{,}\StringTok{'Apps'}\NormalTok{,}\StringTok{'Accept'}\NormalTok{,}\StringTok{'Enroll'}\NormalTok{,}\StringTok{'F.Undergrad'}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{cov\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{cov}\NormalTok{(data)}
-\NormalTok{cov\_matrix}
-\CommentTok{\#\textgreater{}                  Private         Apps       Accept       Enroll  F.Undergrad}
-\CommentTok{\#\textgreater{} Private        0.1986559 7.453552e+02 5.192042e+02     235.1942     1330.764}
-\CommentTok{\#\textgreater{} Apps         745.3552439 1.497846e+07 8.949860e+06 3045255.9876 15289702.474}
-\CommentTok{\#\textgreater{} Accept       519.2042169 8.949860e+06 6.007960e+06 2076267.7627 10393582.435}
-\CommentTok{\#\textgreater{} Enroll       235.1942393 3.045256e+06 2.076268e+06  863368.3923  4347529.884}
-\CommentTok{\#\textgreater{} F.Undergrad 1330.7637175 1.528970e+07 1.039358e+07 4347529.8841 23526579.326}
-\NormalTok{corr\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{cov2cor}\NormalTok{(cov\_matrix)}
-\NormalTok{corr\_matrix}
-\CommentTok{\#\textgreater{}               Private      Apps    Accept    Enroll F.Undergrad}
-\CommentTok{\#\textgreater{} Private     1.0000000 0.4320947 0.4752520 0.5679078   0.6155605}
-\CommentTok{\#\textgreater{} Apps        0.4320947 1.0000000 0.9434506 0.8468221   0.8144906}
-\CommentTok{\#\textgreater{} Accept      0.4752520 0.9434506 1.0000000 0.9116367   0.8742233}
-\CommentTok{\#\textgreater{} Enroll      0.5679078 0.8468221 0.9116367 1.0000000   0.9646397}
-\CommentTok{\#\textgreater{} F.Undergrad 0.6155605 0.8144906 0.8742233 0.9646397   1.0000000}
+\NormalTok{cov_matrix <-}\StringTok{ }\KeywordTok{cov}\NormalTok{(data)}
+\NormalTok{cov_matrix}
+\CommentTok{#>                  Private         Apps       Accept       Enroll  F.Undergrad}
+\CommentTok{#> Private        0.1986559 7.453552e+02 5.192042e+02     235.1942     1330.764}
+\CommentTok{#> Apps         745.3552439 1.497846e+07 8.949860e+06 3045255.9876 15289702.474}
+\CommentTok{#> Accept       519.2042169 8.949860e+06 6.007960e+06 2076267.7627 10393582.435}
+\CommentTok{#> Enroll       235.1942393 3.045256e+06 2.076268e+06  863368.3923  4347529.884}
+\CommentTok{#> F.Undergrad 1330.7637175 1.528970e+07 1.039358e+07 4347529.8841 23526579.326}
+\NormalTok{corr_matrix <-}\StringTok{ }\KeywordTok{cov2cor}\NormalTok{(cov_matrix)}
+\NormalTok{corr_matrix}
+\CommentTok{#>               Private      Apps    Accept    Enroll F.Undergrad}
+\CommentTok{#> Private     1.0000000 0.4320947 0.4752520 0.5679078   0.6155605}
+\CommentTok{#> Apps        0.4320947 1.0000000 0.9434506 0.8468221   0.8144906}
+\CommentTok{#> Accept      0.4752520 0.9434506 1.0000000 0.9116367   0.8742233}
+\CommentTok{#> Enroll      0.5679078 0.8468221 0.9116367 1.0000000   0.9646397}
+\CommentTok{#> F.Undergrad 0.6155605 0.8144906 0.8742233 0.9646397   1.0000000}
 \end{Highlighting}
 \end{Shaded}
 
@@ -223,7 +225,9 @@ We get the same numbers with reversed signs.
 
 \newpage
 
-We define the following function (in julia) to help our understanding:
+\hypertarget{we-define-the-following-function-in-julia-to-help-our-understanding}{%
+\subsubsection{We define the following function (in julia) to help our
+understanding:}\label{we-define-the-following-function-in-julia-to-help-our-understanding}}
 
 Takes the arguments:
 
@@ -231,91 +235,128 @@ Takes the arguments:
 - nrows: number of data to simulate (amount of rows)
 - simulations: number of different times to simulate and average the results
 - fixed_value_col: boolean parameter with true -> assigns a set of values between mins[1] and maxs[1] (other 2 parameters)
-- reverse: 
+- reverse: boolean parameter that determines whether the 0s in the binary variable are assigned to the higher values or not
+- sim_binaries: this would simulate a rolling proportion of binaries where iteration 1 has all zeros in the binary variable and iteration *nrows* has all 1s in the binary variable
+- mins: array containing as first element the minimum value to use for corresponding values in the quantitative columns with 1s and 0s assuming the fixed_value_col parameter is set to false, if it's set to true then it'll be the minimum of the quantitative variable we are calculating the covariance or correlation vs the quantitative variable. the second element of the array represents the same minimum but for the 2nd array which will substitute the values of elements that are 1 or 0 depending on the user choice. (for example: if reverse=false, fixed_value_col=false, maxs=[10,10000] and mins=[1,100],  the values in the quantitative variable corresponding to 1s in the binary variable will, as the loop goes on, go from having minimum value 1 to minimum value 100 and with will go from having maximum value 10 to maximum value 10000, therefore assigning high values (between 100-10000) to elements in the quant.variable corresponding to 1 in the binary variable and keep lower values (between 1-10) for the ones corresponding to 0s in the binary variable)
+- maxs: same as minimum but they're the maximums.
 \end{verbatim}
+
+Example of how the dataset changes for a run of the function with
+parameters: nrows=5, simulations=1 and the rest of the parameters as
+default:
+
+\begin{figure}
+\centering
+\includegraphics{julia_output.png}
+\caption{Example of a simulated dataset with the function
+simulation\_general in the Julia REPL}
+\end{figure}
+
+In Figure 1 we can see 5 iterations (as there's 5 simulated rows) using
+the function, where the leftmost value of each row is a binary variable
+(1 or 0), starting with (1,0,0,0,0) and ending with (1,1,1,1,1), and for
+our quantitative variable (with which we will calculate cov/corr) we can
+see the values go from a high value (copied from the 3rd column) and the
+rest of values being small (6565,7,1,5,8) and ending with large values
+(copied from column 3) being (6565, 8180, 6214, 4544, 3441).
+
+\hypertarget{function-definition}{%
+\subsubsection{Function definition}\label{function-definition}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{using} \BuiltInTok{Random}
-\KeywordTok{using}\NormalTok{ Statistics}
-\KeywordTok{using}\NormalTok{ Plots}
+\NormalTok{using Random}
+\NormalTok{using Statistics}
+\NormalTok{using Plots}
 \NormalTok{gr()}
-\CommentTok{\#\textgreater{} Plots.GRBackend()}
+\CommentTok{#> Plots.GRBackend()}
 
-\KeywordTok{function}\NormalTok{ simulation\_general(nrows}\OperatorTok{,}\NormalTok{ simulations}\OperatorTok{;}\NormalTok{ fixed\_value\_col}\OperatorTok{=}\ExtensionTok{false}\OperatorTok{,}\NormalTok{ reverse}\OperatorTok{=}\ExtensionTok{false}\OperatorTok{,}\NormalTok{ sim\_binaries}\OperatorTok{=}\ExtensionTok{true}\OperatorTok{,}\NormalTok{ mins}\OperatorTok{=}\NormalTok{[}\FloatTok{1}\OperatorTok{,}\FloatTok{100}\NormalTok{]}\OperatorTok{,}\NormalTok{ maxs}\OperatorTok{=}\NormalTok{[}\FloatTok{10}\OperatorTok{,}\FloatTok{10000}\NormalTok{]) }
-    \CommentTok{\# cov and corr matrixes}
-\NormalTok{    covs }\OperatorTok{=}\NormalTok{ zeros(}\DataTypeTok{Float64}\OperatorTok{,}\NormalTok{ nrows}\OperatorTok{,}\NormalTok{ simulations)}
-\NormalTok{    corr }\OperatorTok{=}\NormalTok{ zeros(}\DataTypeTok{Float64}\OperatorTok{,}\NormalTok{ nrows}\OperatorTok{,}\NormalTok{ simulations)}
+\KeywordTok{function}\NormalTok{ simulation_general(nrows, simulations; fixed_value_col=false, reverse=false, sim_binaries=true, mins=[}\FloatTok{1}\NormalTok{,}\FloatTok{100}\NormalTok{], maxs=[}\FloatTok{10}\NormalTok{,}\FloatTok{10000}\NormalTok{]) }
+    \CommentTok{# cov and corr matrixes}
+\NormalTok{    covs = zeros(}\DataTypeTok{Float64}\NormalTok{, nrows, simulations)}
+\NormalTok{    corr = zeros(}\DataTypeTok{Float64}\NormalTok{, nrows, simulations)}
 
-    \CommentTok{\# loop}
-    \KeywordTok{for}\NormalTok{ s }\KeywordTok{in} \FloatTok{1}\OperatorTok{:}\NormalTok{simulations}
-\NormalTok{        pvtapps }\OperatorTok{=}\NormalTok{ zeros(}\DataTypeTok{Float64}\OperatorTok{,}\NormalTok{ nrows}\OperatorTok{,} \FloatTok{3}\NormalTok{)}
-        \KeywordTok{if}\NormalTok{ sim\_binaries }\OperatorTok{==} \ExtensionTok{false}
-\NormalTok{            pvtapps[}\OperatorTok{:,}\FloatTok{1}\NormalTok{] }\OperatorTok{=}\NormalTok{ rand(}\FloatTok{0}\OperatorTok{:}\FloatTok{1}\OperatorTok{,}\NormalTok{ nrows)}
+    \CommentTok{# loop}
+    \KeywordTok{for}\NormalTok{ s }\KeywordTok{in} \FloatTok{1}\NormalTok{:simulations}
+\NormalTok{        pvtapps = zeros(}\DataTypeTok{Float64}\NormalTok{, nrows, }\FloatTok{3}\NormalTok{)}
+        \KeywordTok{if}\NormalTok{ sim_binaries == false}
+\NormalTok{            pvtapps[:,}\FloatTok{1}\NormalTok{] = rand(}\FloatTok{0}\NormalTok{:}\FloatTok{1}\NormalTok{, nrows)}
         \KeywordTok{end}
 
-        \CommentTok{\# random numbers column (quant variable)}
-        \KeywordTok{if}\NormalTok{ fixed\_value\_col }\OperatorTok{==} \ExtensionTok{true}
-\NormalTok{            pvtapps[}\OperatorTok{:,}\FloatTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ rand(mins[}\FloatTok{1}\NormalTok{]}\OperatorTok{:}\NormalTok{maxs[}\FloatTok{1}\NormalTok{]}\OperatorTok{,}\NormalTok{nrows)}
+        \CommentTok{# random numbers column (quant variable)}
+        \KeywordTok{if}\NormalTok{ fixed_value_col == true}
+\NormalTok{            pvtapps[:,}\FloatTok{2}\NormalTok{] = rand(mins[}\FloatTok{1}\NormalTok{]:maxs[}\FloatTok{1}\NormalTok{],nrows)}
         \KeywordTok{else}
-            \KeywordTok{if}\NormalTok{ reverse }\OperatorTok{==} \ExtensionTok{false}
-\NormalTok{                pvtapps[}\OperatorTok{:,}\FloatTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ rand(mins[}\FloatTok{1}\NormalTok{]}\OperatorTok{:}\NormalTok{maxs[}\FloatTok{1}\NormalTok{]}\OperatorTok{,}\NormalTok{nrows)}
-\NormalTok{                pvtapps[}\OperatorTok{:,}\FloatTok{3}\NormalTok{] }\OperatorTok{=}\NormalTok{ rand(mins[}\FloatTok{2}\NormalTok{]}\OperatorTok{:}\NormalTok{maxs[}\FloatTok{2}\NormalTok{]}\OperatorTok{,}\NormalTok{nrows)}
+            \KeywordTok{if}\NormalTok{ reverse == false}
+\NormalTok{                pvtapps[:,}\FloatTok{2}\NormalTok{] = rand(mins[}\FloatTok{1}\NormalTok{]:maxs[}\FloatTok{1}\NormalTok{],nrows)}
+\NormalTok{                pvtapps[:,}\FloatTok{3}\NormalTok{] = rand(mins[}\FloatTok{2}\NormalTok{]:maxs[}\FloatTok{2}\NormalTok{],nrows)}
             \KeywordTok{else} 
-\NormalTok{                pvtapps[}\OperatorTok{:,}\FloatTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ rand(mins[}\FloatTok{2}\NormalTok{]}\OperatorTok{:}\NormalTok{maxs[}\FloatTok{2}\NormalTok{]}\OperatorTok{,}\NormalTok{nrows)}
-\NormalTok{                pvtapps[}\OperatorTok{:,}\FloatTok{3}\NormalTok{] }\OperatorTok{=}\NormalTok{ rand(mins[}\FloatTok{1}\NormalTok{]}\OperatorTok{:}\NormalTok{maxs[}\FloatTok{1}\NormalTok{]}\OperatorTok{,}\NormalTok{nrows)}
+\NormalTok{                pvtapps[:,}\FloatTok{2}\NormalTok{] = rand(mins[}\FloatTok{2}\NormalTok{]:maxs[}\FloatTok{2}\NormalTok{],nrows)}
+\NormalTok{                pvtapps[:,}\FloatTok{3}\NormalTok{] = rand(mins[}\FloatTok{1}\NormalTok{]:maxs[}\FloatTok{1}\NormalTok{],nrows)}
             \KeywordTok{end}
         \KeywordTok{end}
 
-        \CommentTok{\# loop for changing values}
-        \KeywordTok{for}\NormalTok{ i }\KeywordTok{in} \FloatTok{1}\OperatorTok{:}\NormalTok{nrows}
+        \CommentTok{# loop for changing values}
+        \KeywordTok{for}\NormalTok{ i }\KeywordTok{in} \FloatTok{1}\NormalTok{:nrows}
 
-            \KeywordTok{if}\NormalTok{ sim\_binaries }\OperatorTok{==} \ExtensionTok{true}
-\NormalTok{                pvtapps[}\FloatTok{1}\OperatorTok{:}\NormalTok{i}\OperatorTok{,}\FloatTok{1}\NormalTok{] }\OperatorTok{=}\NormalTok{ ones(i)}
+            \KeywordTok{if}\NormalTok{ sim_binaries == true}
+\NormalTok{                pvtapps[}\FloatTok{1}\NormalTok{:i,}\FloatTok{1}\NormalTok{] = ones(i)}
             \KeywordTok{end}
 
-\NormalTok{            pvtapps[}\FloatTok{1}\OperatorTok{:}\NormalTok{i}\OperatorTok{,}\FloatTok{2}\NormalTok{] }\OperatorTok{=}\NormalTok{ pvtapps[}\FloatTok{1}\OperatorTok{:}\NormalTok{i}\OperatorTok{,}\FloatTok{3}\NormalTok{]}
+\NormalTok{            pvtapps[}\FloatTok{1}\NormalTok{:i,}\FloatTok{2}\NormalTok{] = pvtapps[}\FloatTok{1}\NormalTok{:i,}\FloatTok{3}\NormalTok{]}
 
-            \CommentTok{\# calculate corr and cov}
-\NormalTok{            covs[i}\OperatorTok{,}\NormalTok{s] }\OperatorTok{=}\NormalTok{ cov(pvtapps[}\OperatorTok{:,}\FloatTok{1}\NormalTok{]}\OperatorTok{,}\NormalTok{pvtapps[}\OperatorTok{:,}\FloatTok{2}\NormalTok{])}
-\NormalTok{            corr[i}\OperatorTok{,}\NormalTok{s] }\OperatorTok{=}\NormalTok{ cor(pvtapps[}\OperatorTok{:,}\FloatTok{1}\NormalTok{]}\OperatorTok{,}\NormalTok{pvtapps[}\OperatorTok{:,}\FloatTok{2}\NormalTok{])}
+            \CommentTok{# calculate corr and cov}
+\NormalTok{            covs[i,s] = cov(pvtapps[:,}\FloatTok{1}\NormalTok{],pvtapps[:,}\FloatTok{2}\NormalTok{])}
+\NormalTok{            corr[i,s] = cor(pvtapps[:,}\FloatTok{1}\NormalTok{],pvtapps[:,}\FloatTok{2}\NormalTok{])}
         \KeywordTok{end}
     \KeywordTok{end}
 
-    \CommentTok{\# results}
-\NormalTok{    covsrows }\OperatorTok{=}\NormalTok{ zeros(}\DataTypeTok{Float64}\OperatorTok{,}\NormalTok{ nrows)}
-\NormalTok{    corrrows }\OperatorTok{=}\NormalTok{ zeros(}\DataTypeTok{Float64}\OperatorTok{,}\NormalTok{ nrows)}
-    \KeywordTok{for}\NormalTok{ i }\KeywordTok{in} \FloatTok{1}\OperatorTok{:}\NormalTok{nrows}
-\NormalTok{        covsrows[i] }\OperatorTok{=}\NormalTok{ mean(covs[i}\OperatorTok{,:}\NormalTok{])}
-\NormalTok{        corrrows[i] }\OperatorTok{=}\NormalTok{ mean(corr[i}\OperatorTok{,:}\NormalTok{])}
+    \CommentTok{# results}
+\NormalTok{    covsrows = zeros(}\DataTypeTok{Float64}\NormalTok{, nrows)}
+\NormalTok{    corrrows = zeros(}\DataTypeTok{Float64}\NormalTok{, nrows)}
+    \KeywordTok{for}\NormalTok{ i }\KeywordTok{in} \FloatTok{1}\NormalTok{:nrows}
+\NormalTok{        covsrows[i] = mean(covs[i,:])}
+\NormalTok{        corrrows[i] = mean(corr[i,:])}
     \KeywordTok{end}
 
-    \CommentTok{\# return matrixes}
-    \KeywordTok{return}\NormalTok{ covsrows}\OperatorTok{,}\NormalTok{ corrrows}
+    \CommentTok{# return matrixes}
+    \KeywordTok{return}\NormalTok{ covsrows, corrrows}
 \KeywordTok{end}
-\CommentTok{\#\textgreater{} simulation\_general (generic function with 1 method)}
+\CommentTok{#> simulation_general (generic function with 1 method)}
 
-\NormalTok{covsrows}\OperatorTok{,}\NormalTok{ corrrows }\OperatorTok{=}\NormalTok{ simulation\_general(}\FloatTok{500}\OperatorTok{,}\FloatTok{100}\OperatorTok{,}\NormalTok{ reverse}\OperatorTok{=}\ExtensionTok{true}\OperatorTok{,}\NormalTok{ sim\_binaries}\OperatorTok{=}\ExtensionTok{true}\NormalTok{)}\OperatorTok{;}
+\NormalTok{covsrows, corrrows = simulation_general(}\FloatTok{500}\NormalTok{,}\FloatTok{100}\NormalTok{, reverse=false, sim_binaries=true);}
 \end{Highlighting}
 \end{Shaded}
 
+\newpage
+
+\hypertarget{covariance-plot-with-500-data-points-and-100-simulations-averaged}{%
+\paragraph{Covariance plot with 500 data points and 100 simulations
+averaged}\label{covariance-plot-with-500-data-points-and-100-simulations-averaged}}
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{covsrows }\OtherTok{\textless{}{-}}\NormalTok{ JuliaCall}\SpecialCharTok{::}\FunctionTok{julia\_eval}\NormalTok{(}\StringTok{"covsrows"}\NormalTok{)}
-\FunctionTok{plot}\NormalTok{(covsrows)}
+\NormalTok{covsrows <-}\StringTok{ }\NormalTok{JuliaCall}\OperatorTok{::}\KeywordTok{julia_eval}\NormalTok{(}\StringTok{"covsrows"}\NormalTok{)}
+\KeywordTok{plot}\NormalTok{(covsrows)}
 \end{Highlighting}
 \end{Shaded}
 
 \includegraphics{./figures/unnamed-chunk-10-1.pdf}
 
+We can see in our covariance plot
+
+\hypertarget{correlation-plot-with-500-data-points-and-100-simulations-averaged}{%
+\paragraph{Correlation plot with 500 data points and 100 simulations
+averaged}\label{correlation-plot-with-500-data-points-and-100-simulations-averaged}}
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{corrrows }\OtherTok{\textless{}{-}}\NormalTok{ JuliaCall}\SpecialCharTok{::}\FunctionTok{julia\_eval}\NormalTok{(}\StringTok{"corrrows"}\NormalTok{)}
-\FunctionTok{plot}\NormalTok{(corrrows)}
+\NormalTok{corrrows <-}\StringTok{ }\NormalTok{JuliaCall}\OperatorTok{::}\KeywordTok{julia_eval}\NormalTok{(}\StringTok{"corrrows"}\NormalTok{)}
+\KeywordTok{plot}\NormalTok{(corrrows)}
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{./figures/unnamed-chunk-10-2.pdf}
+\includegraphics{./figures/unnamed-chunk-11-1.pdf}
 
 \hypertarget{observations}{%
 \section{OBSERVATIONS}\label{observations}}

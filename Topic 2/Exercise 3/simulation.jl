@@ -23,8 +23,8 @@ function simulation_general(nrows, simulations; fixed_value_col=false, reverse=f
                 pvtapps[:,2] = rand(mins[1]:maxs[1],nrows)
                 pvtapps[:,3] = rand(mins[2]:maxs[2],nrows)
             else 
-                pvtapps[:,2] = rand(mins[2]:maxs[2],nrows)
                 pvtapps[:,3] = rand(mins[1]:maxs[1],nrows)
+                pvtapps[:,2] = rand(mins[2]:maxs[2],nrows)
             end
         end
 
@@ -36,7 +36,6 @@ function simulation_general(nrows, simulations; fixed_value_col=false, reverse=f
             end
 
             pvtapps[1:i,2] = pvtapps[1:i,3]
-
             # calculate corr and cov
             covs[i,s] = cov(pvtapps[:,1],pvtapps[:,2])
             corr[i,s] = cor(pvtapps[:,1],pvtapps[:,2])
@@ -57,5 +56,5 @@ function simulation_general(nrows, simulations; fixed_value_col=false, reverse=f
     plot(p1,p2, layout = (2,1), legend=false) 
 end
 
-simulation_general(500,100, reverse=true, sim_binaries=true)
+simulation_general(500,100, reverse=true ,sim_binaries=true)
 

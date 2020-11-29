@@ -12,6 +12,7 @@ knitr::opts_chunk$set(
   fig.path = "./figures/"
 )
 knitr::knit_engines$set(julia = JuliaCall::eng_juliacall)
+options(JULIA_HOME = "/home/dreth/julia/bin")
 ```
 
 
@@ -20,6 +21,7 @@ knitr::knit_engines$set(julia = JuliaCall::eng_juliacall)
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 library(dplyr)
 library(Rcpp)
+library(JuliaCall)
 ```
 
 #### Importing data as described by exercise
@@ -77,14 +79,25 @@ We get the same numbers with reversed signs.
 
 \newpage
 
-We define the following function (in julia) to help our understanding:
+### We define the following function (in julia) to help our understanding:
     
 Takes the arguments:
 
     - nrows: number of data to simulate (amount of rows)
     - simulations: number of different times to simulate and average the results
     - fixed_value_col: boolean parameter with true -> assigns a set of values between mins[1] and maxs[1] (other 2 parameters)
-    - reverse: 
+    - reverse: boolean parameter that determines whether the 0s in the binary variable are assigned to the higher values or not
+    - sim_binaries: this would simulate a rolling proportion of binaries where iteration 1 has all zeros in the binary variable and iteration *nrows* has all 1s in the binary variable
+    - mins: array containing as first element the minimum value to use for corresponding values in the quantitative columns with 1s and 0s assuming the fixed_value_col parameter is set to false, if it's set to true then it'll be the minimum of the quantitative variable we are calculating the covariance or correlation vs the quantitative variable. the second element of the array represents the same minimum but for the 2nd array which will substitute the values of elements that are 1 or 0 depending on the user choice. (for example: if reverse=false, fixed_value_col=false, maxs=[10,10000] and mins=[1,100],  the values in the quantitative variable corresponding to 1s in the binary variable will, as the loop goes on, go from having minimum value 1 to minimum value 100 and with will go from having maximum value 10 to maximum value 10000, therefore assigning high values (between 100-10000) to elements in the quant.variable corresponding to 1 in the binary variable and keep lower values (between 1-10) for the ones corresponding to 0s in the binary variable)
+    - maxs: same as minimum but they're the maximums.
+
+Example of how the dataset changes for a run of the function with parameters: nrows=5, simulations=1 and the rest of the parameters as default:
+
+![Example of a simulated dataset with the function simulation_general in the Julia REPL](julia_output.png)
+
+In Figure 1 we can see 5 iterations (as there's 5 simulated rows) using the function, where the leftmost value of each row is a binary variable (1 or 0), starting with (1,0,0,0,0) and ending with (1,1,1,1,1), and for our quantitative variable (with which we will calculate cov/corr) we can see the values go from a high value (copied from the 3rd column) and the rest of values being small (6565,7,1,5,8) and ending with large values (copied from column 3) being (6565, 8180, 6214, 4544, 3441). 
+
+### Function definition
 
 ```{julia}
 using Random
@@ -144,12 +157,33 @@ function simulation_general(nrows, simulations; fixed_value_col=false, reverse=f
     return covsrows, corrrows
 end
 
-covsrows, corrrows = simulation_general(500,100, reverse=true, sim_binaries=true);
+covsrows, corrrows = simulation_general(500,100, reverse=false, sim_binaries=true);
+covsrows_rev, corrrows_rev = simulation_general(500,100, reverse=true, sim_binaries=true);
 ```
+
+\newpage
+
+#### Covariance plot with 500 data points and 100 simulations averaged
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 covsrows <- JuliaCall::julia_eval("covsrows")
 plot(covsrows)
+```
+
+Each point here corresponds to one iteration of the function (leftmost being an iteration where the binary variable had its first value as 1 and the rest as 0 and rightmost being all 1s). For each 1 in the binary variable we have a value between 100 and 10000 in the quantitative variable used to calculate the covariance. For each 0 we have a value between 1 and 10, therefore, all values in the quantitative variable corresponding to a 0 in the binary are at least an order (x10) of magnitude larger than those corresponding to a 1.
+
+Clearly, as long as values in the quantitative variable (corresponding to 1 in the binary variable) remain significantly larger than those corresponding to 0 the 0 in the binary variable, our covariance will grow as the proportion of 1s grow, however, once we reach half and half (half 0s and half 1s in the binary variable), our function reaches its global maximum and becomes a decreasing function. 
+
+The opposite thing would happen if we reverse the values of the 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covsrows_rev <- JuliaCall::julia_eval("covsrows_rev")
+plot(covsrows_rev)
+```
+
+#### Correlation plot with 500 data points and 100 simulations averaged
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
 corrrows <- JuliaCall::julia_eval("corrrows")
 plot(corrrows)
 ```
