@@ -3,7 +3,8 @@ using Statistics
 using Plots
 gr()
 
-function simulation_general(nrows, simulations; fixed_value_col=false, reverse=false, sim_binaries=true, mins=[1,100], maxs=[10,10000]) 
+function simulation_general(nrows, simulations; fixed_value_col=false, 
+    reverse=false, sim_binaries=true, mins=[1,100], maxs=[10,10000]) 
     # cov and corr matrixes
     covs = zeros(Float64, nrows, simulations)
     corr = zeros(Float64, nrows, simulations)

@@ -271,7 +271,8 @@ rest of values being small (6565,7,1,5,8) and ending with large values
 \NormalTok{gr()}
 \CommentTok{#> Plots.GRBackend()}
 
-\KeywordTok{function}\NormalTok{ simulation_general(nrows, simulations; fixed_value_col=false, reverse=false, sim_binaries=true, mins=[}\FloatTok{1}\NormalTok{,}\FloatTok{100}\NormalTok{], maxs=[}\FloatTok{10}\NormalTok{,}\FloatTok{10000}\NormalTok{]) }
+\KeywordTok{function}\NormalTok{ simulation_general(nrows, simulations; fixed_value_col=false, reverse=false,}
+\NormalTok{                             sim_binaries=true, mins=[}\FloatTok{1}\NormalTok{,}\FloatTok{100}\NormalTok{], maxs=[}\FloatTok{10}\NormalTok{,}\FloatTok{10000}\NormalTok{]) }
     \CommentTok{# cov and corr matrixes}
 \NormalTok{    covs = zeros(}\DataTypeTok{Float64}\NormalTok{, nrows, simulations)}
 \NormalTok{    corr = zeros(}\DataTypeTok{Float64}\NormalTok{, nrows, simulations)}
@@ -323,8 +324,12 @@ rest of values being small (6565,7,1,5,8) and ending with large values
     \KeywordTok{return}\NormalTok{ covsrows, corrrows}
 \KeywordTok{end}
 \CommentTok{#> simulation_general (generic function with 1 method)}
+\end{Highlighting}
+\end{Shaded}
 
-\NormalTok{covsrows, corrrows = simulation_general(}\FloatTok{500}\NormalTok{,}\FloatTok{100}\NormalTok{, reverse=false, sim_binaries=true);}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{covsrows, corrrows = simulation_general(}\FloatTok{500}\NormalTok{,}\FloatTok{200}\NormalTok{, reverse=false, sim_binaries=true);}
 \end{Highlighting}
 \end{Shaded}
 
@@ -341,9 +346,75 @@ averaged}\label{covariance-plot-with-500-data-points-and-100-simulations-average
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{./figures/unnamed-chunk-10-1.pdf}
+\includegraphics{./figures/unnamed-chunk-11-1.pdf}
 
-We can see in our covariance plot
+Each point here corresponds to one iteration of the function (leftmost
+being an iteration where the binary variable had its first value as 1
+and the rest as 0 and rightmost being all 1s). For each 1 in the binary
+variable we have a value between 100 and 10000 in the quantitative
+variable used to calculate the covariance. For each 0 we have a value
+between 1 and 10, therefore, all values in the quantitative variable
+corresponding to a 0 in the binary are at least an order (x10) of
+magnitude larger than those corresponding to a 1.
+
+Clearly, as long as values in the quantitative variable (corresponding
+to 1 in the binary variable) remain significantly larger than those
+corresponding to 0 the 0 in the binary variable, our covariance will
+grow as the proportion of 1s grow, however, once we reach half and half
+(half 0s and half 1s in the binary variable), our function reaches its
+global maximum and becomes a decreasing function.
+
+\newpage
+
+The opposite thing would happen if we reverse the values, so then we
+would have the values corresponding to the binary variable's 1 to the
+smaller values (1-10) and larger values (100-10000) corresponding to the
+binary variable's 0.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{covsrows_rev, corrrows_rev = simulation_general(}\FloatTok{500}\NormalTok{,}\FloatTok{200}\NormalTok{, reverse=true, sim_binaries=true);}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{covsrows_rev <-}\StringTok{ }\NormalTok{JuliaCall}\OperatorTok{::}\KeywordTok{julia_eval}\NormalTok{(}\StringTok{"covsrows_rev"}\NormalTok{)}
+\KeywordTok{plot}\NormalTok{(covsrows_rev)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{./figures/unnamed-chunk-13-1.pdf}
+
+If we only simulate without considering the binary variable, so
+basically keeping a somewhat even amount of ones and zeros in it and
+randomizing the values of the quantitative variable, then we get no
+discernible pattern:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rand_covrows, rand_corrrows = simulation_general(}\FloatTok{400}\NormalTok{,}\FloatTok{1000}\NormalTok{, }
+\NormalTok{                                        sim_binaries=false, fixed_value_col=false);}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rand_covrows <-}\StringTok{ }\NormalTok{JuliaCall}\OperatorTok{::}\KeywordTok{julia_eval}\NormalTok{(}\StringTok{"rand_covrows"}\NormalTok{)}
+\KeywordTok{plot}\NormalTok{(rand_covrows)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{./figures/unnamed-chunk-15-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{covsrows_rev <-}\StringTok{ }\NormalTok{JuliaCall}\OperatorTok{::}\KeywordTok{julia_eval}\NormalTok{(}\StringTok{"covsrows_rev"}\NormalTok{)}
+\KeywordTok{plot}\NormalTok{(covsrows_rev)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{./figures/unnamed-chunk-16-1.pdf}
 
 \hypertarget{correlation-plot-with-500-data-points-and-100-simulations-averaged}{%
 \paragraph{Correlation plot with 500 data points and 100 simulations
@@ -356,7 +427,7 @@ averaged}\label{correlation-plot-with-500-data-points-and-100-simulations-averag
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{./figures/unnamed-chunk-11-1.pdf}
+\includegraphics{./figures/unnamed-chunk-17-1.pdf}
 
 \hypertarget{observations}{%
 \section{OBSERVATIONS}\label{observations}}

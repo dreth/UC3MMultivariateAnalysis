@@ -105,7 +105,8 @@ using Statistics
 using Plots
 gr()
 
-function simulation_general(nrows, simulations; fixed_value_col=false, reverse=false, sim_binaries=true, mins=[1,100], maxs=[10,10000]) 
+function simulation_general(nrows, simulations; fixed_value_col=false, reverse=false,
+                             sim_binaries=true, mins=[1,100], maxs=[10,10000]) 
     # cov and corr matrixes
     covs = zeros(Float64, nrows, simulations)
     corr = zeros(Float64, nrows, simulations)
@@ -156,9 +157,10 @@ function simulation_general(nrows, simulations; fixed_value_col=false, reverse=f
     # return matrixes
     return covsrows, corrrows
 end
+```
 
-covsrows, corrrows = simulation_general(500,100, reverse=false, sim_binaries=true);
-covsrows_rev, corrrows_rev = simulation_general(500,100, reverse=true, sim_binaries=true);
+```{julia}
+covsrows, corrrows = simulation_general(500,200, reverse=false, sim_binaries=true);
 ```
 
 \newpage
@@ -174,7 +176,30 @@ Each point here corresponds to one iteration of the function (leftmost being an 
 
 Clearly, as long as values in the quantitative variable (corresponding to 1 in the binary variable) remain significantly larger than those corresponding to 0 the 0 in the binary variable, our covariance will grow as the proportion of 1s grow, however, once we reach half and half (half 0s and half 1s in the binary variable), our function reaches its global maximum and becomes a decreasing function. 
 
-The opposite thing would happen if we reverse the values of the 
+\newpage
+
+The opposite thing would happen if we reverse the values, so then we would have the values corresponding to the binary variable's 1 to the smaller values (1-10) and larger values (100-10000) corresponding to the binary variable's 0.
+
+```{julia}
+covsrows_rev, corrrows_rev = simulation_general(500,200, reverse=true, sim_binaries=true);
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covsrows_rev <- JuliaCall::julia_eval("covsrows_rev")
+plot(covsrows_rev)
+```
+
+If we only simulate without considering the binary variable, so basically keeping a somewhat even amount of ones and zeros in it and randomizing the values of the quantitative variable, then we get no discernible pattern:
+
+```{julia}
+rand_covrows, rand_corrrows = simulation_general(400,1000, 
+                                        sim_binaries=false, fixed_value_col=false);
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+rand_covrows <- JuliaCall::julia_eval("rand_covrows")
+plot(rand_covrows)
+```
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 covsrows_rev <- JuliaCall::julia_eval("covsrows_rev")
@@ -187,6 +212,7 @@ plot(covsrows_rev)
 corrrows <- JuliaCall::julia_eval("corrrows")
 plot(corrrows)
 ```
+
 
 # OBSERVATIONS
 
