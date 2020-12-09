@@ -7,6 +7,7 @@ output: 'pdf_document'
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
+    echo = TRUE,
     collapse = TRUE,
     comment = '#>',
     fig.path = './figures/'
@@ -18,6 +19,8 @@ Importing libraries
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
 library(dplyr)
 library(ggplot2)
+library(reshape2)
+library(PerformanceAnalytics)
 ```
 
 Importing data
@@ -31,7 +34,7 @@ Excluding smoothed columns as they are redundant transformations of other column
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
 columns_selected <- names(data)[names(data) != 'new_deaths_smoothed' & names(data) != 'new_cases_smoothed' & names(data) != 'new_cases_smoothed_per_million' & names(data) != 'X']
-data <- data %>% select(all_of(columns_selected))
+data_n <- data %>% select(all_of(columns_selected))
 ```
 
 # Exploratory data analysis
@@ -128,30 +131,31 @@ color_3 <- "lightpink2"
 
 #### Boxplots
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-interesting_vars
-```
+Grouping variables with a max. value below 87 to show all in a single plot:
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-par(mfrow=c(2,2))
-boxplot(X$Apps,main="Boxplot of Apps",xlab="Apps",ylab="All universities",col=color_1,horizontal=TRUE)
-boxplot(X$Apps~X$Private,main="Boxplot of Apps in terms of Private",ylab="Private",xlab="Apps",col=c(color_3,color_2),horizontal=TRUE)
-plot(density(X$Apps,kernel="gaussian"),ylab="Density",main="Kernel density of Apps",xlab="Apps",col=color_1,lwd=5)
-d_Yes <- density(X$Apps[X$Private=="Yes"],kernel="gaussian")
-min_x_d_Yes <- min(d_Yes$x)
-max_x_d_Yes <- max(d_Yes$x)
-min_y_d_Yes <- min(d_Yes$y)
-max_y_d_Yes <- max(d_Yes$y)
-d_No <- density(X$Apps[X$Private=="No"],kernel="gaussian")
-min_x_d_No <- min(d_No$x)
-max_x_d_No <- max(d_No$x)
-min_y_d_No <- min(d_No$y)
-max_y_d_No <- max(d_No$y)
-min_x <- min(c(min_x_d_Yes,min_x_d_No))
-max_x <- max(c(max_x_d_Yes,max_x_d_No))
-min_y <- min(c(min_y_d_Yes,min_y_d_No))
-max_y <- max(c(max_y_d_Yes,max_y_d_No))
-plot(c(min_x,max_x),c(min_y,max_y),xlab="Apps",ylab="Density",main="Kernel density of Apps in terms of Private",type="n")
-lines(d_Yes$x,d_Yes$y,col=color_2,lwd=5)
-lines(d_No$x,d_No$y,col=color_3,lwd=5)
+lower_than_87 <- c('aged_65_older','aged_70_older','extreme_poverty','diabetes_prevalence','hospital_beds_per_thousand','median_age','stringency_index','life_expectancy')
+lower_than_87 = melt(data, id.vars='X', measure.vars=lower_than_87)
+    
+lower_than_87 %>%    
+    ggplot(aes(x="X", y=value)) +
+    geom_boxplot(aes(color=variable))
+
+```
+
+Plotting the rest of the variables:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=8}
+other_vars <- c('human_development_index','cardiovasc_death_rate','gdp_per_capita','population_density','population','new_cases','total_cases','total_deaths')
+par(mfrow=c(length(other_vars),1), mar=c(2,1,1,1))
+for (i in 1:length(other_vars)) {
+    boxplot(data %>% select(other_vars[i]), horizontal=TRUE, main=other_vars[i])
+}
+```
+
+\newpage
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pa <- data_n %>% dplyr::select(interesting_vars)
+chart.Correlation(pa, histogram=TRUE, pch=19, method="pearson")
 ```
