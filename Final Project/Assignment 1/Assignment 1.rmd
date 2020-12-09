@@ -1,0 +1,157 @@
+---
+title: 'Final project: Step 1'
+author: 'Danyu Zhang, Limingrui Wan, Daniel Alonso'
+date: 'December 9th, 2020'
+output: 'pdf_document'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = '#>',
+    fig.path = './figures/'
+)
+```
+
+Importing libraries
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+Importing data
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+data <- read.csv('./data/data.csv')
+head(data)
+```
+
+Excluding smoothed columns as they are redundant transformations of other columns
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+columns_selected <- names(data)[names(data) != 'new_deaths_smoothed' & names(data) != 'new_cases_smoothed' & names(data) != 'new_cases_smoothed_per_million' & names(data) != 'X']
+data <- data %>% select(all_of(columns_selected))
+```
+
+# Exploratory data analysis
+
+## Variable types
+
+### Categorical variables
+
+- continent
+- location
+- development
+
+### Numerical variables:
+
+#### Discrete
+
+- total_cases
+- new_cases
+- total_deaths
+- new_deaths
+- population
+
+#### Continuous
+
+- new_cases_smoothed
+- new_deaths_smoothed
+- total_cases_per_million
+- new_cases_per_million
+- new_cases_smoothed_per_million
+- total_deaths_per_million
+- new_deaths_per_million 
+- stringency_index
+- population_density
+- median_age
+- aged_65_older
+- aged_70_older
+- gdp_per_capita
+- extreme_poverty
+- cardiovasc_death_rate
+- diabetes_prevalence
+- hospital_beds_per_thousand
+- life_expectancy
+- human_development_index
+
+We select variables that we consider interesting to visualize, as the ones we haven't selected might be ralated to these or even ratios of them (in the case of total cases per million)
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+categorical <- c('location','continent','development')
+interesting_vars <- c('total_cases','new_cases','total_deaths','stringency_index','population','population_density','median_age','aged_65_older','gdp_per_capita','extreme_poverty','cardiovasc_death_rate','diabetes_prevalence','hospital_beds_per_thousand','life_expectancy','human_development_index')
+```
+
+### Plots with categorical variables
+
+#### Countries per continent in the dataset
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=continent, y=continent), show.legend = FALSE)
+```
+
+#### Amount of countries per HDI 
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=development, y=development), show.legend = FALSE)
+```
+
+\newpage
+
+#### Countries per continent per HDI
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=development ,y=continent))
+```
+
+\newpage
+
+#### Proportions of HDI per continent
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=continent, y=development))
+```
+
+### Plots with numerical variables
+
+Defining Colors:
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+color_1 <- "khaki"
+color_2 <- "lightseagreen"
+color_3 <- "lightpink2"
+```
+
+#### Boxplots
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+interesting_vars
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+par(mfrow=c(2,2))
+boxplot(X$Apps,main="Boxplot of Apps",xlab="Apps",ylab="All universities",col=color_1,horizontal=TRUE)
+boxplot(X$Apps~X$Private,main="Boxplot of Apps in terms of Private",ylab="Private",xlab="Apps",col=c(color_3,color_2),horizontal=TRUE)
+plot(density(X$Apps,kernel="gaussian"),ylab="Density",main="Kernel density of Apps",xlab="Apps",col=color_1,lwd=5)
+d_Yes <- density(X$Apps[X$Private=="Yes"],kernel="gaussian")
+min_x_d_Yes <- min(d_Yes$x)
+max_x_d_Yes <- max(d_Yes$x)
+min_y_d_Yes <- min(d_Yes$y)
+max_y_d_Yes <- max(d_Yes$y)
+d_No <- density(X$Apps[X$Private=="No"],kernel="gaussian")
+min_x_d_No <- min(d_No$x)
+max_x_d_No <- max(d_No$x)
+min_y_d_No <- min(d_No$y)
+max_y_d_No <- max(d_No$y)
+min_x <- min(c(min_x_d_Yes,min_x_d_No))
+max_x <- max(c(max_x_d_Yes,max_x_d_No))
+min_y <- min(c(min_y_d_Yes,min_y_d_No))
+max_y <- max(c(max_y_d_Yes,max_y_d_No))
+plot(c(min_x,max_x),c(min_y,max_y),xlab="Apps",ylab="Density",main="Kernel density of Apps in terms of Private",type="n")
+lines(d_Yes$x,d_Yes$y,col=color_2,lwd=5)
+lines(d_No$x,d_No$y,col=color_3,lwd=5)
+```
