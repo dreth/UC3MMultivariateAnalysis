@@ -205,7 +205,7 @@ plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles
 plots(dataset=data, col='cardiovasc_death_rate',type='boxplot')
 ```
 
-
+It appears that most countries seem to have a cardiovascular death rate between 170.67 and 329.79 deaths per $100,000$ inhabitants. With a few extreme cases 
 
 \newpage
 
