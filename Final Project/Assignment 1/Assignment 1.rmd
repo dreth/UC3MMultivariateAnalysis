@@ -21,6 +21,8 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(PerformanceAnalytics)
+library(gridExtra)
+library(stringr)
 ```
 
 Importing data
@@ -33,8 +35,9 @@ head(data)
 Excluding smoothed columns as they are redundant transformations of other columns
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
-columns_selected <- names(data)[names(data) != 'new_deaths_smoothed' & names(data) != 'new_cases_smoothed' & names(data) != 'new_cases_smoothed_per_million' & names(data) != 'X']
-data_n <- data %>% select(all_of(columns_selected))
+removed_cols <- c('new_deaths_smoothed','new_cases_smoothed','new_cases_smoothed_per_million','total_cases_per_million','new_deaths_per_million','new_cases_per_million','total_deaths_per_million','aged_70_older','new_deaths','X')
+data_n <- data
+for (col in removed_cols) {data_n <- data_n[names(data_n) != col]}
 ```
 
 # Exploratory data analysis
@@ -127,31 +130,202 @@ Defining Colors:
 color_1 <- "khaki"
 color_2 <- "lightseagreen"
 color_3 <- "lightpink2"
+color_4 <- "gold"
 ```
 
-#### Boxplots
-
-Grouping variables with a max. value below 87 to show all in a single plot:
+### Function to plot quantitative variables 
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-lower_than_87 <- c('aged_65_older','aged_70_older','extreme_poverty','diabetes_prevalence','hospital_beds_per_thousand','median_age','stringency_index','life_expectancy')
-lower_than_87 = melt(data, id.vars='X', measure.vars=lower_than_87)
-    
-lower_than_87 %>%    
-    ggplot(aes(x="X", y=value)) +
-    geom_boxplot(aes(color=variable))
-
-```
-
-Plotting the rest of the variables:
-
-```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=8}
-other_vars <- c('human_development_index','cardiovasc_death_rate','gdp_per_capita','population_density','population','new_cases','total_cases','total_deaths')
-par(mfrow=c(length(other_vars),1), mar=c(2,1,1,1))
-for (i in 1:length(other_vars)) {
-    boxplot(data %>% select(other_vars[i]), horizontal=TRUE, main=other_vars[i])
+plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles='default') {
+    var <- dataset %>% select(col)
+    if (bins == 'default') {bins = rep(10,3)}
+    if (xtick_angles == 'default') {xtick_angles = rep(90,3)}
+    if (type == 'boxplot') {
+        p1 <- dataset %>% ggplot(aes(x=var[,1])) +
+            geom_boxplot() +
+            ggtitle(str_interp("${col}")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.y=element_blank())
+        p2 <- dataset %>% ggplot(aes(x=var[,1], fill=continent)) +
+            geom_boxplot() +
+            ggtitle(str_interp("${col} grouped by continent")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.y=element_blank())
+        p3 <- dataset %>% ggplot(aes(x=var[,1], fill=development)) +
+            geom_boxplot() +
+            ggtitle(str_interp("${col} grouped by development")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.y=element_blank())
+    } else if (type == 'hist') {
+        p1 <- dataset %>% ggplot(aes(x=var[,1])) +
+            geom_histogram(aes(y=..density..), bins=bins[1]) +
+            geom_density() +
+            ggtitle(str_interp("${col}")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[1]))
+        if (density == FALSE) {
+        p2 <- dataset %>% ggplot(aes(x=var[,1], fill=continent)) +
+            geom_histogram(show.legend = FALSE,bins=bins[2]) +
+            ggtitle(str_interp("${col} by continent")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[2])) +
+            facet_wrap(~continent, nrow = 1)
+        p3 <- dataset %>% ggplot(aes(x=var[,1], fill=development)) +
+            geom_histogram(show.legend = FALSE,bins=bins[3]) +
+            ggtitle(str_interp("${col} by development")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[3])) +
+            facet_wrap(~development, nrow = 1)
+        } else {
+        p2 <- dataset %>% ggplot(aes(x=var[,1], fill=continent)) +
+            geom_histogram(show.legend = FALSE,bins=bins[2],aes(y=..density..)) +
+            geom_density(show.legend = FALSE) +
+            ggtitle(str_interp("${col} by continent")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[2])) +
+            facet_wrap(~continent, nrow = 1)
+        p3 <- dataset %>% ggplot(aes(x=var[,1], fill=development)) +
+            geom_histogram(show.legend = FALSE,bins=bins[3],aes(y=..density..)) +
+            geom_density(show.legend = FALSE) +
+            ggtitle(str_interp("${col} by development")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[3])) +
+            facet_wrap(~development, nrow = 1)
+        }
+    } 
+    grid.arrange(p1,p2,p3, nrow=3)
 }
 ```
+
+\newpage
+
+### Boxplots for cardiovascular death rate
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='cardiovasc_death_rate',type='boxplot')
+```
+
+
+
+\newpage
+
+### Histogram and kernel density for cardiovascular death rate
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='cardiovasc_death_rate',type='hist', density=TRUE, bins=c(13,10,16), xtick_angles=c(0,0,0))
+```
+
+\newpage
+
+### Boxplots for diabetes prevalence
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='diabetes_prevalence',type='boxplot')
+```
+
+For diabetes prevalence we can see that most countries sit at a value of less than 10, but higher than 5. Some countries surpassing even 30%. These extreme values correspond to a few countries in Oceania and Africa.
+
+The continent with the highest incidence as a proportion of its population seems to be Oceania. Which includes the top 3 countries with the highest amount of diabetics as a percentage of their population. With 30.53% for Marshall Islands. Although the values of the other top 2 countries are not included in our dataset, after some research, we found out that they're also 2 countries in Oceania. North America's diabetes incidence has nearly doubled in the past 20 years, therefore taking the spot 2 as the continent with the highest incidence with Asia, South America, Europe and Africa trailing behind.
+
+We can, to an extent, see that higher development doesn't necessarily mean higher or lower diabetes prevalence and this might relate more to genetic composition and diet of the inhabitants.
+
+\newpage
+
+### Histogram and kernel density for diabetes prevalence
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='diabetes_prevalence',type='hist', density=TRUE, bins=c(13,10,16), xtick_angles=c(0,0,0))
+```
+
+For the distribution of the data we see that it is resembles a normal distribution with a long left tail and the most countries clumped around the mean of ~7.9%. 
+
+For each continent the incidence seems to be quite different, with some continents having a much higher incidence than others (for example Oceania vs Africa), however they all seem to clump around similar values.
+
+For the development we see the same we saw in the boxplots. Not much of a pattern or indication that there's any specific relationship between HDI and diabetes prevalence.
+
+\newpage
+
+### Boxplots for hospital beds per thousand inhabitants
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='hospital_beds_per_thousand',type='boxplot')
+```
+
+Looking at the hospital beds per thousand inhabitants variable boxplots we can see a few interesting things. We could use this variable as a measure of the quality of a healthcare system of a country. Where the higher the bed availability in hospitals is, the better the health system can cope with the demand for beds that a pandemic usually comes with. Especially with how widespread COVID-19 is.
+
+We can see that some extremely poor countries have about 0.1-0.3 beds per thousand inhabitants, like it is the case with Mali and Niger. Some other countries like South Korea or Belarus have an extremely high capacity, with around 12 and 11 beds per thousand inhabitants respectively. However, even if the amount of beds per thousand inhabitants seems to be low, there's some countries with a suspicious seemingly low amount of beds, however, some of this are clearly just very highly populated countries.  
+
+For countries with high and very high HDI, there's a clear bias towards having greater bed capacity, however, this is not the case for all countries with that quality as there's clearly some countries with medium HDI that have a quite formidable bed capacity as well.
+
+\newpage
+
+### Histogram and kernel density for hospital beds per thousand inhabitants
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='hospital_beds_per_thousand',type='hist', density=FALSE, bins=c(13,12,12), xtick_angles=c(0,0,0))
+```
+
+These plots tell a little bit of a different story to the boxplots. Where the largest concentration of countries is between 0 and 5 hospital beds per thousand inhabitants with an extremely scarce amount of countries with more than 10 beds per thousand inhabitants.
+
+By segregating the data by continent we see that development does not necesarily mean greater healthcare capacity, with most continents boasting very similar numbers in this aspect whil esome like Asia, Africa, Europe and North america possessing some exceptions with extremely high numbers compred to the rest. However, yes, there's definitely a hint in continents with more developed countries (like Europe or some parts of Asia) which have a higher amount of beds, while Africa, which is predominantly composed of less developed countries tend to have a lower amount of beds.
+
+Finally, looking at development we see that it is rare for much less developed countries to have high bed capacity, while it is much easier for high to very high developed countries to have greater capacity. However, we can't confidently say that there's lots of exceptions to this 'rule'.
+
+\newpage
+
+### Boxplots for life expectancy
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='hospital_beds_per_thousand',type='boxplot')
+```
+
+For life expectancy we can see moost countries sitting amove 66 years of age, with values going as low as 53.24 and as high as 84.63. 
+
+Africa has the lowest life expectancy while europe has the highest. The rest of the continents sit at roughly similar ranges.
+
+Grouping by HDI, we can see that the most developed countries have a significantly higher life expectancy than those with low HDI. It clearly shows a strong positive correlation between them. Where the higher the life expectancy the higher the HDI. With very few exceptions.
+
+\newpage
+
+### Histogram and kernel density for life expectancy
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='life_expectancy',type='hist', density=FALSE, bins=c(13,12,12), xtick_angles=c(0,0,0))
+```
+
+The general plot is somewhat left skewed, as most countries (about 80%) have a life expectancy higher than 65 years of age. Our density plot shows a strong concentration between 70 and 80 years of age, as this range covers the most nations.
+
+For each continent we see that europe shows a typically very high life expectancy while Africa shows a typically lower-than-average life expectancy for most countries with some exceptions. The rest of the continents sit at about the average life expectancy with some countries in Asia and North America at significantly higher-than-average numbers.
+
+For HDI we can again see some of the strong correlation, where life expectancy for very highly developed nations seems to be also quite high and the same happens with less developed nations.
+
+\newpage
+
+### Boxplots for Human Development Index
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='human_development_index',type='boxplot')
+```
+
+We can see most countries fall between 0.6 and 0.8, o ur median HDI is 0.741. 
+
+For continents we can see Africa lagging behind with most of its countries between 0.4 and 0.6 HDI, probably given the porverty situation in the continent.
+
+The rest of the continents sit between 0.6 and 0.8 for most of its countries with North America having 2 very extreme outliers which are its minimum and maximum values (corresponding respectively to Haiti and USA). Europe is generally above 0.8.
+
+As our development variable was constructed from the human_development_index variable, we can see that there's clearly marked bounds for each HDI range. The ranges are as follows: *very high* for HDI of 0.800 and above, *high* from 0.700 to 0.799, *medium* from 0.550 to 0.699 and *low* below 0.550.
+
+\newpage
+
+### Histogram and kernel density for Human Development Index
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+plots(dataset=data, col='human_development_index',type='hist', density=FALSE, bins=c(13,10,10), xtick_angles=c(0,0,0))
+```
+
+For the human development index we can see that the variable is somewhat left skewed, given that the average HDI is ~0.71, which most countries either match or are above of. 
+
+For the HDI per continent we can see that africa has a clear concentration below 0.6, given that most countries in Africa have a low HDI. South america and Asia tell a similar story, most countries are at or above 0.6. We can see that for North America there's a little concentration below 0.6 and most countries betweeen 0.6 and 0.8 as North America includes Central America and the Caribbean which tend to have a lower HDI than USA/Canada, which are towards the right of 0.8. Most european countries have a very high to high HDI, therefore the density plot is quite left skewed and most contries in Oceania have a lower-than-average HDI with the exception of New Zealand and Australia which are above 0.8.
 
 \newpage
 
@@ -159,3 +333,4 @@ for (i in 1:length(other_vars)) {
 pa <- data_n %>% dplyr::select(interesting_vars)
 chart.Correlation(pa, histogram=TRUE, pch=19, method="pearson")
 ```
+
