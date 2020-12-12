@@ -44,6 +44,8 @@ data_n <- data
 for (col in removed_cols) {data_n <- data_n[names(data_n) != col]}
 ```
 
+\newpage
+
 # Exploratory data analysis
 
 ## Variable types
@@ -54,7 +56,7 @@ for (col in removed_cols) {data_n <- data_n[names(data_n) != col]}
 - location
 - development
 
-### Numerical variables:
+### Numerical variables
 
 #### Discrete
 
@@ -93,49 +95,74 @@ categorical <- c('location','continent','development')
 interesting_vars <- c('total_cases','new_cases','total_deaths','stringency_index','population','population_density','median_age','aged_65_older','gdp_per_capita','extreme_poverty','cardiovasc_death_rate','diabetes_prevalence','hospital_beds_per_thousand','life_expectancy','human_development_index')
 ```
 
-### Plots with categorical variables
+\newpage
 
-#### Countries per continent in the dataset
+## Plots with categorical variables
+
+### Countries per continent in the dataset
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
 ggplot(data=data) +
     geom_bar(aes(fill=continent, y=continent), show.legend = FALSE)
 ```
 
-#### Amount of countries per HDI 
+As a heads up, we will have more data points for continents with more countries, as there is an entry per country in the dataset. Therefore Africa will be our continent with the most entries, followed by Asia and Europe.
+
+North america contains all of Central America and the Caribbean. Oceania contains some island countries and archipielagos in the pacific that belong to the continent but it is by far our continent with the least entries.
+
+\newpage
+
+### Amount of countries per HDI 
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
 ggplot(data=data) +
     geom_bar(aes(fill=development, y=development), show.legend = FALSE)
 ```
 
+For development (which is a variable constructed from the *human_development_index* variable), we have an even amount of countries per HDI, with very high development countries being the largest group.
+
+The *development* variable was constructed as follows from the *human_development_index* variable:
+
+    - *very high* for HDI of 0.800 and above
+    - *high* from 0.700 to 0.799
+    - *medium* from 0.550 to 0.699
+    - and *low* below 0.550.
+
+We followed Wikipedia's criteria for the construction of this variable as it accurately represents and summarizes well HDI in 4 categories.
+
 \newpage
 
-#### Countries per continent per HDI
+### Countries per continent per HDI
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
 ggplot(data=data) +
     geom_bar(aes(fill=development ,y=continent))
 ```
 
+We can see here how many countries per continent correspond to which HDI using our constructed development variable. We can see Europe is fully composed of high and very high development countries. North america has most of its countries being high development countries, with a significant group of medium to low development countries, possibly located in Central America and the Caribbean. The very high development countries correspond to Bahamas, Barbados, Canada and the United States.
+
+Africa is mostly composted of medium to low development countries and Asia is a bit of a tossup between high, very high and medium development countries.
+
+To be fair, a country having high HDI does not imply that it isn't a developing country, as most countries with high HDI are, indeed, developing countries. This is simply a categorical representation of Human Development Index. 
+
 \newpage
 
-#### Proportions of HDI per continent
+### Proportions of HDI per continent
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
 ggplot(data=data) +
     geom_bar(aes(fill=continent, y=development))
 ```
 
-### Plots with numerical variables
+Looking at the opposite plot to the previous one we can see that most of the very high development countries are located in Europe and Asia. With not a single very high development country in Africa and with most of the low development countries located in Africa.
 
-Defining Colors:
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-color_1 <- "khaki"
-color_2 <- "lightseagreen"
-color_3 <- "lightpink2"
-color_4 <- "gold"
-```
+Medium development countries are mostly located in Asia, Africa and the Americas with not a single medium or low development country located in Europe.
+
+Which again, does not suggest at all that perhaps poverty situations do not exist in the European continent. For instance, about 30% of the population of Albania live under 5.50 USD a day. This figure corresponds to nearly a third of the population and this particular trend shows up for other countries in the Balkan Peninsula along with Moldova and Romania (for more examples). 
+
+\newpage
+
+## Plots with numerical variables
 
 ### Function to plot quantitative variables 
 
