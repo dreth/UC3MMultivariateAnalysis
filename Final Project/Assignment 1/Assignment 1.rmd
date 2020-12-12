@@ -1,12 +1,15 @@
 ---
 title: 'Final project: Step 1'
 author: 'Danyu Zhang, Limingrui Wan, Daniel Alonso'
-date: 'December 9th, 2020'
-output:
-  pdf_document: default
-  html_document: 
+date: 'December 13th, 2020'
+output: 
+  pdf_document:
     toc: true
     toc_depth: 4
+  includes:
+    in_header: latex/header.tex
+    before_body: latex/before_body.tex
+    after_body: latex/after_body.tex
 ---
 
 ```{r setup, include=FALSE}
@@ -17,6 +20,8 @@ knitr::opts_chunk$set(
     fig.path = './figures/'
 )
 ```
+
+\newpage
 
 Importing libraries
 
@@ -250,11 +255,12 @@ We can probably say that these three countries are the outliers for the variable
 ### Histogram and kernel density for total cases of COVID-19
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='total_cases',type='hist', density=FALSE, bins = c(80,15,15),xtick_angles=c(0,30,20))
+plots(dataset=data, col='total_cases',type='hist', 
+      density=FALSE, bins = c(80,15,15),xtick_angles=c(0,30,20))
 ```
 Observing this graph, we can confirm that the distribution is very right-skewed. 
 Only Africa, Europe and Oceania don't have outliers. But it is probably because we don't have the dataset updated yet (we have the data-set updated on 3rd of November, 2020). 
-About the development of different countries, we can't group the coutries in terms of how they have developed by the total cases of COVID-19 they have. 
+About the development of different countries, we can't group the countries in terms of how they have developed by the total cases of COVID-19 they have. 
 
 
 \newpage
@@ -276,7 +282,8 @@ Another thing to mention is that the countries that have the most of the new cas
 ### Histogram and kernel density for new cases of COVID-19
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='new_cases',type='hist', density=FALSE, bins = c(70,13,15),xtick_angles=c(0,30,20))
+plots(dataset=data, col='new_cases',type='hist', density=FALSE,
+      bins = c(70,13,15),xtick_angles=c(0,30,20))
 ```
 Observing this graph, we can confirm that the distribution is very right-skewed with some outliers (especially the US, France and India).
 
@@ -301,7 +308,8 @@ It is obvious that the country of North America that has the most of the total d
 ### Histogram and kernel density for total deaths due to COVID-19
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='total_deaths',type='hist', density=FALSE, bins = c(55,15,13),xtick_angles=c(0,30,20))
+plots(dataset=data, col='total_deaths',type='hist', density=FALSE,
+      bins = c(55,15,13),xtick_angles=c(0,30,20))
 ```
 Again, the distribution is very right-skewed with some outliers (the US, Brazil and India).
 
@@ -326,7 +334,8 @@ Look at the stringency index grouped by development we notice that the countries
 ### Histogram and kernel density for stringency index
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='stringency_index',type='hist', density=TRUE,xtick_angles=c(0,30,20))
+plots(dataset=data, col='stringency_index',type='hist',
+      density=TRUE,xtick_angles=c(0,30,20))
 ```
 The distribution is quite symmetric distributed for different continents. Except for Oceania, there are some countries have really low stringency index; and South America, the distribution of this variable is quite left skewed. 
 We can probably distinguish the countries with low HDI from others, these countries usually have less stringency index. 
@@ -348,7 +357,8 @@ For example, China has the most population of all, India is the second, these tw
 ### Histogram and kernel density for population
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='population',type='hist', density=FALSE, bins = c(60,13,13),xtick_angles=c(0,30,20))
+plots(dataset=data, col='population',type='hist', density=FALSE,
+      bins = c(60,13,13),xtick_angles=c(0,30,20))
 ```
 
 The distribution is very right-skewed, the population of each country is very different from others, but the variable population does not provide any information of whether the country has high HDI or not. 
@@ -367,7 +377,8 @@ For instance, Singapore has the most population density of all with a value of 7
 ### Histogram and kernel density for population density
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='population_density',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+plots(dataset=data, col='population_density',type='hist',
+      density=FALSE, xtick_angles=c(0,30,20))
 ```
 The distribution is very right-skewed, the population density of each country is very different from others. And the variable does not provide any information of whether the country has high HDI or not. 
 
@@ -392,7 +403,8 @@ From that, we can conclude that the majority of countries from Africa has low HD
 ### Histogram and kernel density for median age
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='median_age',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+plots(dataset=data, col='median_age',type='hist',
+      density=TRUE, xtick_angles=c(0,30,20))
 ```
 The distributions of median age for different continent are very different. 
 The distribution of Africa is right skewed while others are symmetric. 
@@ -420,7 +432,8 @@ These box-plots kind of give us the same information as the median age of each c
 ### Histogram and kernel density for the percentage of population aged 65 or older
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='aged_65_older',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+plots(dataset=data, col='aged_65_older',type='hist',
+      density=TRUE, xtick_angles=c(0,30,20))
 ```
 The distributions of this variable for different continent are very different. 
 The distributions of Africa, Asia, North America and South America are right skewed while the distribution of Europe is left skewed.  
@@ -441,14 +454,15 @@ Observing the box-plot for the global GDP per capita we can see that the distrib
 The grouped box-plots provide more interesting conclusions: 
 - In the box-plots grouped by continent we observe that the GDP per capita of Europe is a little bit higher than the rest of the continents while Africa has the least median of GDP per capita with some "outliers" that have similar values as other continents. 
 
-- Nevertheless, the box-plots grouped by development give us more relevent information. We can more or less define whether a new country has very high, high, medium or low HDI by having its GDP per capita. Due to the clear difference of GPD per capita between the different levels of HDI. The countries that have very high HDI often have larger GDP per capita, and the countries with low HDI have less GDP per capita. There is a very clear correlation between these two variables.  
+- Nevertheless, the box-plots grouped by development give us more relevant information. We can more or less define whether a new country has very high, high, medium or low HDI by having its GDP per capita. Due to the clear difference of GPD per capita between the different levels of HDI. The countries that have very high HDI often have larger GDP per capita, and the countries with low HDI have less GDP per capita. There is a very clear correlation between these two variables.  
 
 \newpage
 
 ### Histogram and kernel density for GDP per capita
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='gdp_per_capita',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+plots(dataset=data, col='gdp_per_capita',type='hist',
+      density=TRUE, xtick_angles=c(0,30,20))
 ```
 The global distribution of this variable is very right skewed. 
 The distributions of Africa is more concentrated (leptokurtic) while others are more flat (platykurtic). 
@@ -475,7 +489,8 @@ However, the grouped box-plots provide more interesting conclusions:
 ### Histogram and kernel density for percentage of population in extreme proverty
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='extreme_poverty',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+plots(dataset=data, col='extreme_poverty',type='hist',
+      density=FALSE, xtick_angles=c(0,30,20))
 ```
 The global distribution of this variable is very right skewed. 
 The distributions of Europe is more concentrated (leptokurtic) in low values while others are more flat (platykurtic). 
@@ -491,7 +506,7 @@ plots(dataset=data, col='cardiovasc_death_rate',type='boxplot')
 
 It appears that most countries seem to have a cardiovascular death rate between 170.67 and 329.79 deaths per $100,000$ inhabitants. With Uzbekistan being in the absolute extreme, with about 724 deaths by cardiovascular disease per $100,000$ inhabitants.
 
-Grouping by continent we see that oceania seems to have the largest box (probably due to its lower amount of countries), with a few extreme cases per continent. On average the continent with the highest death rate due to cardiovascular disease is Oceania, followed by Asia. Seems like cardiovascular disease in the Americas could be a less common cause of death than in the rest of the world. 
+Grouping by continent we see that Oceania seems to have the largest box (probably due to its lower amount of countries), with a few extreme cases per continent. On average the continent with the highest death rate due to cardiovascular disease is Oceania, followed by Asia. Seems like cardiovascular disease in the Americas could be a less common cause of death than in the rest of the world. 
 
 By development we can see a bit of a pattern, where the least developed a country is, the higher its cardiovascular death rate. However, even if we see this pattern, we can't confidently say that living in a less developed country makes an individual more likely to die from cardiovascular disease. There are definitely many other factors that affect such rate per HDI.
 
@@ -500,12 +515,13 @@ By development we can see a bit of a pattern, where the least developed a countr
 ### Histogram and kernel density for cardiovascular death rate
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='cardiovasc_death_rate',type='hist', density=TRUE, bins=c(13,10,16), xtick_angles=c(0,0,0))
+plots(dataset=data, col='cardiovasc_death_rate',type='hist',
+      density=TRUE, bins=c(13,10,16), xtick_angles=c(0,0,0))
 ```
 
-For cardiovascular death rate we see a similar story here than with the general boxplot. The larger concentration of countries clumps around the previously mentioned interval, and the distribution of teh variable as is is somewhat normal-like with a relatively long left tail.
+For cardiovascular death rate we see a similar story here than with the general boxplot. The larger concentration of countries clumps around the previously mentioned interval, and the distribution of the variable as is is somewhat normal-like with a relatively long left tail.
 
-Per continent we see that Europe has a significant concentration of countries below 200, along with South america, which, on average, is the continent with the lowest death rate from cardiovascular disease according to our data. For oceania we see a flat distribution with some high numbers and low numbers, of course, we know that there's less data points, therefore our main concentration below 200 corresponds to New Zealand and Australia, and the rest of the countries seem to have a higher death rate than the rest. Asia's left tail suggests a few other countries with a very high cardiovascular death rate like Uzbekistan.
+Per continent we see that Europe has a significant concentration of countries below 200, along with South America, which, on average, is the continent with the lowest death rate from cardiovascular disease according to our data. For Oceania we see a flat distribution with some high numbers and low numbers, of course, we know that there's less data points, therefore our main concentration below 200 corresponds to New Zealand and Australia, and the rest of the countries seem to have a higher death rate than the rest. Asia's left tail suggests a few other countries with a very high cardiovascular death rate like Uzbekistan.
 
 Looking at development we see the much higher concentration of low cardiovascular death rates for very high development countries. Which in general tend to have better healthcare. However while lower for low and medium development countries, we don't see too much of a difference between the two in terms of their distribution.
 
@@ -528,7 +544,8 @@ We can, to an extent, see that higher development doesn't necessarily mean highe
 ### Histogram and kernel density for diabetes prevalence
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='diabetes_prevalence',type='hist', density=TRUE, bins=c(13,10,16), xtick_angles=c(0,0,0))
+plots(dataset=data, col='diabetes_prevalence',type='hist',
+      density=TRUE, bins=c(13,10,16), xtick_angles=c(0,0,0))
 ```
 
 For the distribution of the data we see that it is resembles a normal distribution with a long left tail and the most countries clumped around the mean of ~7.9%. 
@@ -556,7 +573,8 @@ For countries with high and very high HDI, there's a clear bias towards having g
 ### Histogram and kernel density for hospital beds per thousand inhabitants
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='hospital_beds_per_thousand',type='hist', density=FALSE, bins=c(13,12,12), xtick_angles=c(0,0,0))
+plots(dataset=data, col='hospital_beds_per_thousand',type='hist',
+      density=TRUE, bins=c(13,12,12), xtick_angles=c(0,0,0))
 ```
 
 These plots tell a little bit of a different story to the boxplots. Where the largest concentration of countries is between 0 and 5 hospital beds per thousand inhabitants with an extremely scarce amount of countries with more than 10 beds per thousand inhabitants.
@@ -584,7 +602,8 @@ Grouping by HDI, we can see that the most developed countries have a significant
 ### Histogram and kernel density for life expectancy
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='life_expectancy',type='hist', density=FALSE, bins=c(13,12,12), xtick_angles=c(0,0,0))
+plots(dataset=data, col='life_expectancy',type='hist',
+      density=TRUE, bins=c(13,12,12), xtick_angles=c(0,0,0))
 ```
 
 The general plot is somewhat left skewed, as most countries (about 80%) have a life expectancy higher than 65 years of age. Our density plot shows a strong concentration between 70 and 80 years of age, as this range covers the most nations.
@@ -614,7 +633,8 @@ As our development variable was constructed from the human_development_index var
 ### Histogram and kernel density for Human Development Index
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
-plots(dataset=data, col='human_development_index',type='hist', density=FALSE, bins=c(13,10,10), xtick_angles=c(0,0,0))
+plots(dataset=data, col='human_development_index',type='hist',
+      density=FALSE, bins=c(13,10,10), xtick_angles=c(0,0,0))
 ```
 
 For the human development index we can see that the variable is somewhat left skewed, given that the average HDI is ~0.71, which most countries either match or are above of. 
@@ -623,18 +643,7 @@ For the HDI per continent we can see that africa has a clear concentration below
 
 \newpage
 
-## Correlation matrix + scatter plot
-
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-pa <- data_n %>% dplyr::select(interesting_vars)
-chart.Correlation(pa, histogram=TRUE, pch=19, method="pearson")
-```
-
-
-
-\newpage
-
-### PCP Plot
+## Correlation and scatter plots
 
 We define a function to set colors for categorical variables in a PCP plot:
 
@@ -667,6 +676,79 @@ development_colors <- colors(data$development,palette1)
 continent_colors <- colors(data$continent,palette2)
 ```
 
+### Correlation matrix + scatter plot
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=9.5, fig.width=15}
+pa <- data_n %>% dplyr::select(interesting_vars)
+chart.Correlation(pa, histogram=TRUE, pch=19, method="pearson")
+```
+
+Looking at the variables which are interestingly correlated we have the following:
+
+- *Very high correlation*:
+    -  **0.94**: Total deaths and total cases, not much to say here, it obviously makes sense that, during a pandemic of a deadly disease, we see correlation between total cases and total deaths. 
+    -  **0.91**: median age and proportion of population aged 65 or older are both measures of age within a population, therefore makes sense to see them being highly correlated.
+    -  **0.91**: life expectancy and human development index, as life expectancy is a component of HDI it makes sense that these are correlated.
+    -  **0.89**: HDI and median age, we can see that clearly, highly developed countries tend to have an aging population, along with lower fertility rates. 
+    -  **0.84**: life expectancy and median age. The higher the life expectancy of a population, the more developed the country is, then, the older its population is. This can definitely be framed from a different perspective though.
+
+- *High to medium correlation*:
+    -  **0.79**:  total cases and new cases, we can see that the correlation is high, however, not as much as we might expect, which tells us that outbreaks happening in certain countries differ from its total case count significantly, therefore we can have countries with massive total counts but very small daily counts for november 11th 2020.
+    -  **0.77**:  new cases and total deaths show a similar trend to what previously described with total cases and new cases. We see that an active outbreak and death count of a country can differ significantly, however, they are usually somewhat correlated.
+    -  **-0.77**: extreme poverty and HDI, this is clear, as the more developed a country is, the least likely it is to have a significant portion of its population living under the poverty line.
+    -  **0.76**: HDI vs aged_65_older and HDI vs gdp_per_capita, this relates to median age vs HDI as well as to the logical idea that the higher the income of individuals in a population is, the higher the development of the nation they reside in tends to be. 
+    -  **-0.75**: extreme poverty and life expectancy are clearly related, as the more developed a nation is, the least people under the poverty line it tends to have, and along with this, the healthier the population will be. People living under the poverty line can very commonly be malnourished or take less care of their health, therefore effectively reducing their life expectancy.
+    -  **0.73**: proportion of population aged 65 or older and life expectancy are correlated as well for obvious reasons, similar to median age vs life expectancy.  
+
+- *Other correlations worth mentioning*:
+    -  **0.66**: life expectancy and gdp per capita, which at first glance would suggest more correlation than simply 0.66, but this is enough to confidently state that there's definitely a strong relationship between life expectancy and gdp per capita, and definitely, the more a person earns, the longer they tend to live.
+    -  **0.66 and 0.65**: hospital beds per thousand inhabitands vs median age and vs aged_65_older. This suggests that the more healthcare availability there is, the generally older the population tends to be. Usually we would mention life expectancy which still boasts a somewhat significant correlation with hospital beds per thousand inhabitants (**0.45**), however, while a higher life expectancy tends to also mean a higher median age, or the other way around, we might want to mention that not necessarily because a country has a high life expectancy, it will have great healthcare availability.
+    - **0.54**: population and total cases, one could assume that countries with a very high population would have more trouble managing a pandemic, as they tend to be larger and have more cities and larger cities, therefore making movement within the country a hugely difficult logistic problem. However, countries like China or Indonesia, with their massive populations have been able to manage the pandemic just fine. However, others like India, USA or European countries like Spain, France and Germany, have had a much harder time managing the pandemic.
+
+\newpage
+
+### Scatter plot matrix for interesting variables, grouped by continent
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=12, fig.width=16}
+pairs(pa,pch=1,col=continent_colors)
+```
+
+Color coding:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+unique(cbind(data$continent, continent_colors))
+```
+
+Let's make a few observations from this:
+
+- Usually Europe is at the top of high quality of life metrics like median age, HDI. gdp per capita and such. Europe, however, tends to be at the top (along with some other countries) of the cases and deaths charts. 
+
+- Usually Africa is at the bottom of high quality of life metrics. The rest of the continents are around the middle. However, it also tends to be at the bottom of case and death counts and stringency index. 
+
+- There's clearly defined groups in measures typically used to measure quality of life, things like HDI, life expectancy and similar plots against other variables of the same type, show a clear grouping distinction between continents. 
+
+\newpage
+
+### Scatter plot matrix for interesting variables, grouped by development
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=12, fig.width=16}
+pairs(pa,pch=1,col=development_colors)
+```
+
+Color coding:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+unique(cbind(data$development, development_colors))
+```
+
+Ignoring all correlations using human_development_index as it composes the development variable we can observe a few things:
+
+- Even more so than with continents, quality of life measures are much more clearly defined. We see that countries with the highest development also top the cases correlations with basically everything else. They tend to be at the rightest, and and the top of such plots.
+
+\newpage
+
+### PCP Plot
+
 We group variables by their skewness, while we have many right skewed variables, we group the rest of them in another PCP plot, to have a less crowded plot.
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
@@ -684,25 +766,44 @@ others <- data_n %>% dplyr::select(others)
 
 ### Right skewed variables PCP
 
-```{r, echo=TRUE, warning=FALSE}
-parcoord(others,var.label=TRUE, col=development_colors)
+#### Grouped by continent
+
+```{r, echo=TRUE, warning=FALSE, fig.width=14, fig.height=8}
+parcoord(others,var.label=TRUE, col=continent_colors)
 ```
 
+For the PCP plot of our (mostly) right skewed variables we have the following observations:
 
+- 
 
-```{r, echo=TRUE, warning=FALSE}
-parcoord(others,var.label=TRUE, col=continent_colors)
+\newpage
+
+#### Grouped by development
+
+```{r, echo=TRUE, warning=FALSE, fig.width=14, fig.height=9}
+parcoord(others,var.label=TRUE, col=development_colors)
 ```
 
 ### Other variables PCP
 
-```{r, echo=TRUE, warning=FALSE}
+\newpage
+
+#### Grouped by continent
+
+```{r, echo=TRUE, warning=FALSE, fig.width=12, fig.height=9}
+parcoord(right_skewed,var.label=TRUE, col=continent_colors)
+```
+
+\newpage
+
+#### Grouped by development
+
+
+```{r, echo=TRUE, warning=FALSE, fig.width=12, fig.height=9}
 parcoord(right_skewed,var.label=TRUE, col=development_colors)
 ```
 
-```{r, echo=TRUE, warning=FALSE}
-parcoord(right_skewed,var.label=TRUE, col=continent_colors)
-```
+\newpage
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
 library(mice)
