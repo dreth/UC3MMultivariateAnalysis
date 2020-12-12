@@ -48,7 +48,11 @@ head(data)
 Excluding smoothed columns as they are redundant transformations of other columns
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
-removed_cols <- c('new_deaths_smoothed','new_cases_smoothed','new_cases_smoothed_per_million','total_cases_per_million','new_deaths_per_million','new_cases_per_million','total_deaths_per_million','aged_70_older','new_deaths','X')
+removed_cols <- c('new_deaths_smoothed','new_cases_smoothed',
+                  'new_cases_smoothed_per_million',
+                  'total_cases_per_million','new_deaths_per_million',
+                  'new_cases_per_million','total_deaths_per_million',
+                  'aged_70_older','new_deaths','X')
 data_n <- data
 for (col in removed_cols) {data_n <- data_n[names(data_n) != col]}
 ```
@@ -101,7 +105,13 @@ We select variables that we consider interesting to visualize, as the ones we ha
 
 ```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
 categorical <- c('location','continent','development')
-interesting_vars <- c('total_cases','new_cases','total_deaths','stringency_index','population','population_density','median_age','aged_65_older','gdp_per_capita','extreme_poverty','cardiovasc_death_rate','diabetes_prevalence','hospital_beds_per_thousand','life_expectancy','human_development_index')
+interesting_vars <- c('total_cases','new_cases','total_deaths',
+                      'stringency_index','population',
+                      'population_density','median_age',
+                      'aged_65_older','gdp_per_capita',
+                      'extreme_poverty','cardiovasc_death_rate',
+                      'diabetes_prevalence','hospital_beds_per_thousand',
+                      'life_expectancy','human_development_index')
 ```
 
 \newpage
@@ -132,10 +142,10 @@ For development (which is a variable constructed from the *human_development_ind
 
 The *development* variable was constructed as follows from the *human_development_index* variable:
 
-    - *very high* for HDI of 0.800 and above
-    - *high* from 0.700 to 0.799
-    - *medium* from 0.550 to 0.699
-    - and *low* below 0.550.
+- **very high** for HDI of 0.800 and above
+- **high** from 0.700 to 0.799
+- **medium** from 0.550 to 0.699
+- and **low** below 0.550.
 
 We followed Wikipedia's criteria for the construction of this variable as it accurately represents and summarizes well HDI in 4 categories.
 
@@ -175,7 +185,9 @@ Which again, does not suggest at all that perhaps poverty situations do not exis
 
 ### Function to plot quantitative variables 
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
+\small
+
+```{r class.source="function", echo=TRUE, warning=FALSE, message=FALSE}
 plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles='default') {
     var <- dataset %>% dplyr::select(col)
     if (bins == 'default') {bins = rep(10,3)}
@@ -184,18 +196,15 @@ plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles
         p1 <- dataset %>% ggplot(aes(x=var[,1])) +
             geom_boxplot() +
             ggtitle(str_interp("${col}")) +
-            theme(axis.title.x=element_blank(),
-                  axis.text.y=element_blank())
+            theme(axis.title.x=element_blank(),axis.text.y=element_blank())
         p2 <- dataset %>% ggplot(aes(x=var[,1], fill=continent)) +
             geom_boxplot() +
             ggtitle(str_interp("${col} grouped by continent")) +
-            theme(axis.title.x=element_blank(),
-                  axis.text.y=element_blank())
+            theme(axis.title.x=element_blank(),axis.text.y=element_blank())
         p3 <- dataset %>% ggplot(aes(x=var[,1], fill=development)) +
             geom_boxplot() +
             ggtitle(str_interp("${col} grouped by development")) +
-            theme(axis.title.x=element_blank(),
-                  axis.text.y=element_blank())
+            theme(axis.title.x=element_blank(),axis.text.y=element_blank())
     } else if (type == 'hist') {
         p1 <- dataset %>% ggplot(aes(x=var[,1])) +
             geom_histogram(aes(y=..density..), bins=bins[1]) +
@@ -231,11 +240,12 @@ plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles
             theme(axis.title.x=element_blank(),
                   axis.text.x = element_text(angle = xtick_angles[3])) +
             facet_wrap(~development, nrow = 1)
-        }
-    } 
+        }} 
     grid.arrange(p1,p2,p3, nrow=3)
 }
 ```
+
+\normalsize
 
 \newpage
 
@@ -307,9 +317,9 @@ It is obvious that the country of North America that has the most of the total d
 
 ### Histogram and kernel density for total deaths due to COVID-19
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=8}
 plots(dataset=data, col='total_deaths',type='hist', density=FALSE,
-      bins = c(55,15,13),xtick_angles=c(0,30,20))
+      bins = c(55,15,13),xtick_angles=c(0,90,90))
 ```
 Again, the distribution is very right-skewed with some outliers (the US, Brazil and India).
 
@@ -363,6 +373,8 @@ plots(dataset=data, col='population',type='hist', density=FALSE,
 
 The distribution is very right-skewed, the population of each country is very different from others, but the variable population does not provide any information of whether the country has high HDI or not. 
 
+\newpage
+
 ### Boxplots for population density
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
@@ -376,9 +388,9 @@ For instance, Singapore has the most population density of all with a value of 7
 
 ### Histogram and kernel density for population density
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=7}
 plots(dataset=data, col='population_density',type='hist',
-      density=FALSE, xtick_angles=c(0,30,20))
+      density=FALSE, xtick_angles=c(0,90,20))
 ```
 The distribution is very right-skewed, the population density of each country is very different from others. And the variable does not provide any information of whether the country has high HDI or not. 
 
@@ -514,7 +526,7 @@ By development we can see a bit of a pattern, where the least developed a countr
 
 ### Histogram and kernel density for cardiovascular death rate
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5.5}
 plots(dataset=data, col='cardiovasc_death_rate',type='hist',
       density=TRUE, bins=c(13,10,16), xtick_angles=c(0,0,0))
 ```
@@ -752,15 +764,14 @@ Ignoring all correlations using human_development_index as it composes the devel
 We group variables by their skewness, while we have many right skewed variables, we group the rest of them in another PCP plot, to have a less crowded plot.
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-right_skewed <- c('total_cases','new_cases','population',
-                  'population_density','aged_65_older',
-                  'gdp_per_capita','extreme_poverty')
+right_skewed <- c('extreme_poverty','gdp_per_capita',
+                  'aged_65_older','population_density',
+                  'total_cases','new_cases','population')
 right_skewed <- data_n %>% dplyr::select(right_skewed)
 
-others <- c('stringency_index','median_age',
-            'cardiovasc_death_rate','diabetes_prevalence',
-            'hospital_beds_per_thousand','life_expectancy',
-            'human_development_index')
+others <- c('human_development_index','stringency_index',
+            'life_expectancy','median_age','diabetes_prevalence',
+            'cardiovasc_death_rate','hospital_beds_per_thousand')
 others <- data_n %>% dplyr::select(others)
 ```
 
@@ -768,55 +779,83 @@ others <- data_n %>% dplyr::select(others)
 
 #### Grouped by continent
 
-```{r, echo=TRUE, warning=FALSE, fig.width=14, fig.height=8}
-parcoord(others,var.label=TRUE, col=continent_colors)
+```{r, echo=TRUE, warning=FALSE, fig.width=14, fig.height=6}
+parcoord(right_skewed,var.label=TRUE, col=continent_colors)
 ```
 
 For the PCP plot of our (mostly) right skewed variables we have the following observations:
 
-- 
+- We can see the group differences clearly for the extreme poverty variable, where the top observations are mostly from Africa
+
+- For gdp_per_capita it's clear that the trend is shifted entirely, whereas Africa was at the top of the extreme poverty observations, it is now at the bottom of the gdp_per_capita observations, along with Europe and a few countries from other countinents like Asia, North America and Oceania climbing to the top.
+
+- aged_65_older shows a similar trend as gdp_per_capita which we confirmed in the correlation plot as somewhat correlated variables, along with life expectancy.
+
+- Population density gets mashed down as we have a few extreme outlier countries with incredibly high population densities. The top observation being Singapore, with a staggering population density of 7915.73 people per square kilometer.
+
+- Similar with population density, total cases is opaqued by the extreme total case numbers of USA, India and Brazil.
+
+- Population is topped by China and India, which include represent over 1/4th of the world population.
 
 \newpage
 
 #### Grouped by development
 
 ```{r, echo=TRUE, warning=FALSE, fig.width=14, fig.height=9}
-parcoord(others,var.label=TRUE, col=development_colors)
+parcoord(right_skewed,var.label=TRUE, col=development_colors)
 ```
 
-### Other variables PCP
+When segregating by development:
+
+- Our extreme poverty countries tend to all be countries with low or medium HDI, however, low HDI countries represent the highest spots.
+
+- gdp per capita and aged 65 or older are variables which were previously mentioned as being strongly correlated to HDI, therefore we can see how strong the correlation is here and how starkly it divides groups, where it is almost certain that the top positions of both these variables are taken by very high or high development countries.
+
+- for total cases and new cases it is interesting to see that the seemingly top positions are all covered by the highest development countries. We could attribute this to more widespread testing, but also to much more widespread movements of people. People in low HDI countries tend to move much less and live much simpler lives usually as most inhabitants live in rural areas.
 
 \newpage
 
+### Other variables PCP
+
 #### Grouped by continent
 
-```{r, echo=TRUE, warning=FALSE, fig.width=12, fig.height=9}
-parcoord(right_skewed,var.label=TRUE, col=continent_colors)
+```{r, echo=TRUE, warning=FALSE, fig.width=12, fig.height=8}
+parcoord(others,var.label=TRUE, col=continent_colors)
 ```
+
+When looking at the rest of the variables, which were separated from the right skewed ones to allow for beter visibility of group segregation, we see some interesting things.
+
+Grouping by continent we can point out a few things:
+
+- Human development index is clearly significantly higher for Europe and some countries in North America, Asia and Oceania than the rest of the countries, while African countries usually take the bottom spots with some quite poor countries in Oceania, Asia and the Americas.
+
+- Stringency index seems like a huge mashup, where the only discernible information we can take is that there's seemingly no way to tell which continents tend to have the strictest rules. Every country seems to do its own thing when it comes to restrictions.
+
+- life expectancy tells much of the same story we saw on the correlation plot and the histograms, clearly, the lower the quality of life in a country, the lower its life expectancy will be. And as most quality of life metrics disfavour poorest countries, life expectancy is not an exception here. We unfortunately also see Africa taking the lowest positions and very high development countries taking the highest, with Japan taking the top spot closely followed by Some European and Asian countries with very high HDI. Median age also follows this trend.
+
+- For diabetes prevalence there's a bit of a mash, where genetic background and diet seem to probably matter more than the location of individuals. Prevalence seems to be the highest in Oceania and the lowest in Africa and Europe.
+
+- No discernible group difference between continents for cardiovasc_death_rate
+
+- For hospital_beds_per_thousand we can see that there's a tendency for countries in Africa to have significantly lower bed availability, and while more developed countries tend to have higher bed availability, there are definitely plenty of exceptions to this rule.
 
 \newpage
 
 #### Grouped by development
 
-
 ```{r, echo=TRUE, warning=FALSE, fig.width=12, fig.height=9}
-parcoord(right_skewed,var.label=TRUE, col=development_colors)
+parcoord(others,var.label=TRUE, col=development_colors)
 ```
+
+When grouping by our HDI categories, we see the following:
+
+- Groups are clearly divided in most categories with the exception of diabetes prevalence
+
+- We see much of the same we had mentioned earlier related to stringency index, there's no clear grouping among developed or developing nations. All that's visible is that developed nations might be somewhat less flexible than average with restrictions, but there's plenty of exceptions to this hypothesis.
+
+- For life expectancy and median age, as mentioned previously, there's a clear division among the most and the least developed nations, as development is quite related to these two variables.
+
+- Hospital beds per thousand inhabitants shows much of the same, there's plenty of developed countries with lacking bed availability for new patients. However, there's clearly some of a tendency for highly developed nations to have better availability than nations with a lower HDI.
 
 \newpage
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
-library(mice)
-covid = data[c('continent','location','development',
-               'total_cases','new_cases','total_deaths',
-               'stringency_index','population',
-               'population_density','median_age',
-               'aged_65_older','gdp_per_capita',
-               'extreme_poverty','cardiovasc_death_rate',
-               'diabetes_prevalence','hospital_beds_per_thousand',
-               'life_expectancy','human_development_index')]
-covid$continent=factor(covid$continent)
-covid$development=factor(covid$development)
-covid_imp=mice(covid,m=5,method = "cart")
-covid_imp=complete(covid_imp)
-```
