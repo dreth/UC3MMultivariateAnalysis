@@ -2,7 +2,11 @@
 title: 'Final project: Step 1'
 author: 'Danyu Zhang, Limingrui Wan, Daniel Alonso'
 date: 'December 9th, 2020'
-output: 'pdf_document'
+output:
+  pdf_document: default
+  html_document: 
+    toc: true
+    toc_depth: 4
 ---
 
 ```{r setup, include=FALSE}
@@ -619,10 +623,14 @@ For the HDI per continent we can see that africa has a clear concentration below
 
 \newpage
 
+## Correlation matrix + scatter plot
+
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 pa <- data_n %>% dplyr::select(interesting_vars)
 chart.Correlation(pa, histogram=TRUE, pch=19, method="pearson")
 ```
+
+
 
 \newpage
 
