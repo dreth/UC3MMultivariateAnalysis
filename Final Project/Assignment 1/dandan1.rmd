@@ -1,0 +1,425 @@
+---
+title: 'Final project: Step 1'
+author: 'Danyu Zhang, Limingrui Wan, Daniel Alonso'
+date: 'December 9th, 2020'
+output: 'pdf_document'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Importing libraries
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(PerformanceAnalytics)
+library(gridExtra)
+library(stringr)
+```
+
+Importing data
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+data<-read.csv("data.csv",header = TRUE)
+head(data)
+```
+
+Excluding smoothed columns as they are redundant transformations of other columns
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+removed_cols <- c('new_deaths_smoothed','new_cases_smoothed','new_cases_smoothed_per_million','total_cases_per_million','new_deaths_per_million','new_cases_per_million','total_deaths_per_million','aged_70_older','new_deaths','X')
+data_n <- data
+for (col in removed_cols) {data_n <- data_n[names(data_n) != col]}
+```
+
+# Exploratory data analysis
+
+## Variable types
+
+### Categorical variables
+
+- continent
+- location
+- development
+
+### Numerical variables:
+
+#### Discrete
+
+- total_cases
+- new_cases
+- total_deaths
+- new_deaths
+- population
+
+#### Continuous
+
+- new_cases_smoothed
+- new_deaths_smoothed
+- total_cases_per_million
+- new_cases_per_million
+- new_cases_smoothed_per_million
+- total_deaths_per_million
+- new_deaths_per_million 
+- stringency_index
+- population_density
+- median_age
+- aged_65_older
+- aged_70_older
+- gdp_per_capita
+- extreme_poverty
+- cardiovasc_death_rate
+- diabetes_prevalence
+- hospital_beds_per_thousand
+- life_expectancy
+- human_development_index
+
+We select variables that we consider interesting to visualize, as the ones we haven't selected might be ralated to these or even ratios of them (in the case of total cases per million)
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+categorical <- c('location','continent','development')
+interesting_vars <- c('total_cases','new_cases','total_deaths','stringency_index','population','population_density','median_age','aged_65_older','gdp_per_capita','extreme_poverty','cardiovasc_death_rate','diabetes_prevalence','hospital_beds_per_thousand','life_expectancy','human_development_index')
+```
+
+### Plots with categorical variables
+
+#### Countries per continent in the dataset
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=continent, y=continent), show.legend = FALSE)
+```
+
+#### Amount of countries per HDI 
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=development, y=development), show.legend = FALSE)
+```
+
+\newpage
+
+#### Countries per continent per HDI
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=development ,y=continent))
+```
+
+\newpage
+
+#### Proportions of HDI per continent
+
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+ggplot(data=data) +
+    geom_bar(aes(fill=continent, y=development))
+```
+
+### Plots with numerical variables
+
+Defining Colors:
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+color_1 <- "khaki"
+color_2 <- "lightseagreen"
+color_3 <- "lightpink2"
+```
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+pa <- data_n %>% dplyr::select(interesting_vars)
+chart.Correlation(pa, histogram=TRUE, pch=19, method="pearson")
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles='default') {
+    var <- dataset %>% select(col)
+    if (bins == 'default') {bins = rep(10,3)}
+    if (xtick_angles == 'default') {xtick_angles = rep(90,3)}
+    if (type == 'boxplot') {
+        p1 <- dataset %>% ggplot(aes(x=var[,1])) +
+            geom_boxplot() +
+            ggtitle(str_interp("${col}")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.y=element_blank())
+        p2 <- dataset %>% ggplot(aes(x=var[,1], fill=continent)) +
+            geom_boxplot() +
+            ggtitle(str_interp("${col} grouped by continent")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.y=element_blank())
+        p3 <- dataset %>% ggplot(aes(x=var[,1], fill=development)) +
+            geom_boxplot() +
+            ggtitle(str_interp("${col} grouped by development")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.y=element_blank())
+    } else if (type == 'hist') {
+        p1 <- dataset %>% ggplot(aes(x=var[,1])) +
+            geom_histogram(aes(y=..density..), bins=bins[1]) +
+            geom_density() +
+            ggtitle(str_interp("${col}")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[1]))
+        if (density == FALSE) {
+        p2 <- dataset %>% ggplot(aes(x=var[,1], fill=continent)) +
+            geom_histogram(show.legend = FALSE,bins=bins[2]) +
+            ggtitle(str_interp("${col} by continent")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[2])) +
+            facet_wrap(~continent, nrow = 1)
+        p3 <- dataset %>% ggplot(aes(x=var[,1], fill=development)) +
+            geom_histogram(show.legend = FALSE,bins=bins[3]) +
+            ggtitle(str_interp("${col} by development")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[3])) +
+            facet_wrap(~development, nrow = 1)
+        } else {
+        p2 <- dataset %>% ggplot(aes(x=var[,1], fill=continent)) +
+            geom_histogram(show.legend = FALSE,bins=bins[2],aes(y=..density..)) +
+            geom_density(show.legend = FALSE) +
+            ggtitle(str_interp("${col} by continent")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[2])) +
+            facet_wrap(~continent, nrow = 1)
+        p3 <- dataset %>% ggplot(aes(x=var[,1], fill=development)) +
+            geom_histogram(show.legend = FALSE,bins=bins[3],aes(y=..density..)) +
+            geom_density(show.legend = FALSE) +
+            ggtitle(str_interp("${col} by development")) +
+            theme(axis.title.x=element_blank(),
+                  axis.text.x = element_text(angle = xtick_angles[3])) +
+            facet_wrap(~development, nrow = 1)
+        }
+    } 
+    grid.arrange(p1,p2,p3, nrow=3)
+}
+```
+
+### Total cases of COVID-19 for each country
+
+```{r}
+plots(dataset=data, col='total_cases',type='boxplot')
+```
+```{r}
+# By continent
+data$location[data$total_cases==max(data$total_cases)]
+data$location[data$total_cases==max(data$total_cases[data$continent=='South America'])]
+data$location[data$total_cases==max(data$total_cases[data$continent=='Asia'])]
+
+# By development
+data$location[data$total_cases==max(data$total_cases[data$development=='very high'])]
+data$location[data$total_cases==max(data$total_cases[data$development=='high'])]
+data$location[data$total_cases==max(data$total_cases[data$development=='medium'])]
+```
+
+On the first box-plot of the variable, we can observe that the distribution of it is very right skewed, with some outliers. And the box-plots grouped by continents tell us that the country that has the most of the total cases is the US from continent North America which has a very high HDI. Meanwhile, the country that has the most of the total cases of Asia is India (second of the world), and has medium HDI. The third country that has the most of the cases is Brazil from South America with high HDI.
+We can probably say that these three countries are the outliers for the variable total cases. 
+
+\newpage 
+
+```{r}
+plots(dataset=data, col='total_cases',type='hist', density=FALSE, bins = c(80,15,15),xtick_angles=c(0,30,20))
+```
+Observing this graph, we can confirm that the distribution is very right-skewed. 
+Only Africa, Europe and Oceania don't have outliers. But it is probably because we don't have the dataset updated yet (we have the data-set updated on 3rd of November, 2020). 
+About the development of different countries, we can't group the coutries in terms of how they have developed by the total cases of COVID-19 they have. 
+
+
+#### Total cases of COVID-19 for each country
+
+```{r}
+plots(dataset=data, col='new_cases',type='boxplot')
+```
+
+```{r}
+# By continent
+data$location[data$new_cases==max(data$new_cases)]
+data$location[data$new_cases==max(data$new_cases[data$continent=='Europe'])]
+data$location[data$new_cases==max(data$new_cases[data$continent=='Asia'])]
+
+# By development
+data$location[data$new_cases==max(data$new_cases[data$development=='medium'])]
+head(data[order(data$new_cases,decreasing = TRUE),])
+```
+In the first box-plot above, we see that the distribution es very right skewed with some outliers. The country that has the most of the new cases is the US. 
+Observing the box-plot of new cases grouped by continent it is obvious that the country of North America that has the most of the new cases is the US. And the second country that has the most of the new cases is in Europe, France. Both of them have a very high Human Development Index. The third country that has the most of the new cases is India from Asia with medium HDI.
+Another thing to mention is that the countries that have the most of the new cases is very related with the previous variable, which is the total cases, they have similar characteristics.
+
+```{r}
+plots(dataset=data, col='new_cases',type='hist', density=FALSE, bins = c(70,13,15),xtick_angles=c(0,30,20))
+```
+Observing this graph, we can confirm that the distribution is very right-skewed with some outliers (especially the US, France and India).
+In the histograms of new cases by continent, we can see that Europe has the most dispersed distribution comparing to other continents, which means that the countries of Europe have very different values of new cases from each other. 
+About the development of different countries, we can't group the coutries in terms of how they have developed by the new cases per day of COVID-19 they have, the distribution of countries that have a very high Human development Index have a some outliers. 
+
+
+#### Total deaths of COVID-19 for each country
+
+```{r}
+plots(dataset=data, col='total_deaths',type='boxplot')
+```
+
+```{r}
+head(data[order(data$total_deaths,decreasing = TRUE),])
+```
+
+From the box-plots above we can say that this variable of new deaths is very likely distributed with the variables total cases and new cases. These three variables are all right-skewed and all have some outliers.
+In this case, the country that has the most of the total deaths is still the US. 
+It is obvious that the country of North America that has the most of the total deaths is the US. And the second country that has the most of the total deaths is in South America, Brazil. The third country that has the most of the total deaths is from Asia, India. 
+
+```{r warning=FALSE}
+plots(dataset=data, col='total_deaths',type='hist', density=FALSE, bins = c(55,15,13),xtick_angles=c(0,30,20))
+```
+Again, the distribution is very right-skewed with some outliers (the US, Brazil and India).
+In the histograms of new cases by continent and histograms by development, the distributions are also very right-skewed, some of them have outliers. 
+We still can't group the coutries in terms of how they have developed by the total deaths of COVID-19 they have, the distribution of countries that have a very high, high and medium Human development Index have a some outliers. 
+
+
+#### stringency_index for each country
+
+```{r warning=FALSE}
+plots(dataset=data, col='stringency_index',type='boxplot')
+```
+
+```{r}
+head(data[order(data$stringency_index),])
+```
+
+From the box-plot above we can say that the global distribution of stringency index is a little left skewed, but it is the most normally distributed until now. There are some countries that have really low stringency index, for example Afghanistan from Asia has stringency index equals to 5.56, or Nicaragua from North America with stringency index 8.33.
+Observing the box-plot of stringency index grouped by continent we can see that South America has the most strict measurements and Oceania has the least strict measurements. The rest of them have similar distribution on stringency index. 
+Look at the stringency index grouped by development we notice that the countries which have low HDI have less stringency index (using the criterion of quantiles). 
+
+```{r warning=FALSE}
+plots(dataset=data, col='stringency_index',type='hist', density=TRUE,xtick_angles=c(0,30,20))
+```
+The distribution is quite symmetric distributed for different continents. Except for Oceania, there are some countries have really low stringency index; and South America, the distribution of this variable is quite left skewed. 
+We can probably distinguish the countries with low HDI from others, these countries usually have less stringency index. 
+
+
+#### population of each country
+
+```{r warning=FALSE}
+plots(dataset=data, col='population',type='boxplot')
+```
+
+```{r}
+head(data[order(data$population,decreasing=TRUE), ])
+```
+
+Observing the box-plot above we can see that the distribution of population is very right skewed, some countries have way more population than others. 
+For example, China has the most population of all, India is the second, these two countries are most exaggerated outliersfrom the plot. 
+
+```{r warning=FALSE}
+plots(dataset=data, col='population',type='hist', density=FALSE, bins = c(60,13,13),xtick_angles=c(0,30,20))
+```
+The distribution is very right-skewed, the population of each country is very different from others, but the variable population does not provide any information of whether the country has high HDI or not. 
+
+
+#### population density of each country
+
+```{r warning=FALSE}
+plots(dataset=data, col='population_density',type='boxplot')
+```
+
+```{r}
+head(data[order(data$population_density,decreasing=TRUE), ])
+```
+Population density is a measurement of population per unit area. Observing the previous box-plot above we can see that the distribution of population density is very likely distributed as population distribution, it is very right skewed, some countries have really high population density. 
+For instance, Singapore has the most population density of all with a value of 7915.731, it is a small country of Asia with very high HDI. 
+
+```{r warning=FALSE}
+plots(dataset=data, col='population_density',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+```
+The distribution is very right-skewed, the population density of each country is very different from others. And the variable does not provide any information of whether the country has high HDI or not. 
+
+
+#### median age of each country
+
+```{r warning=FALSE}
+plots(dataset=data, col='median_age',type='boxplot')
+```
+
+```{r}
+head(data[order(data$median_age,decreasing=TRUE), ])
+```
+Observing the box-plot for the global median age we can notice that the distribution of it is quite symmetric. The majority of the median age of different countries is located between 20-40. 
+But from the grouped box-plots we can find something really interesting: 
+- For the box-plots grouped by continent we can see that the median age of Europe is larger (more than 40) than the rest of the continents while Africa has the least median age (less than 20) with some "outliers" that have similar median age as other continents. 
+- For the box-plots grouped by development we detect that usually higher developed a country, larger the median age, e.g. the countries that have very high HDI have median of median age more than 40, and the countries that have low HDI have median of median ge less than 20. 
+From that, we can conclude that the majority of countries from Africa has low HDI while majority of countries from Europe has very high HDI. 
+
+```{r warning=FALSE}
+plots(dataset=data, col='median_age',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+```
+The distributions of median age for different continent are very different. 
+The distribution of Africa is right skewed while others are symmetric. 
+The distributions of Asia, North America, Oceania and South America are more flat (platykurtic), and the distributions of Africa and Europe are more concentrated (leptokurtic). 
+
+
+#### percentage of population aged 65 or older of each country
+
+```{r warning=FALSE}
+plots(dataset=data, col='aged_65_older',type='boxplot')
+```
+
+```{r}
+head(data[order(data$aged_65_older,decreasing=TRUE), ])
+```
+From the box-plot for the global percentage of population aged 65 or older we can notice that the distribution is right skewed. There are more than half of the countries have less than 10% of population of aged 65 or older. 
+However, the grouped box-plots give us more interesting results: 
+- In the box-plots grouped by continent we can see that the percentage of population aged 65 or older of Europe is larger (more than 10%) than the rest of the continents while Africa has the least median age (generally less than 10%) with some "outliers" that have similar values as other continents. 
+- In the box-plots grouped by development we detect that usually higher developed a country, larger the median age. 
+These box-plots kind of give us the same information as the median age of each country, although this variable is not as clear as the previous one, median age. 
+
+```{r warning=FALSE}
+plots(dataset=data, col='aged_65_older',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+```
+The distributions of this variable for different continent are very different. 
+The distributions of Africa, Asia, North America and South America are right skewed while the distribution of Europe is left skewed.  
+The distribution of Africa is more concentrated (leptokurtic) while others are more flat. 
+The distributions of countries that have low HDI are more concentrated, and they usually have less percentage of population of aged 65 or older. 
+
+
+#### GDP per capita of each country
+
+```{r warning=FALSE}
+plots(dataset=data, col='gdp_per_capita',type='boxplot')
+```
+
+```{r}
+head(data[order(data$gdp_per_capita,decreasing=TRUE), ])
+```
+Observing the box-plot for the global GDP per capita we can see that the distribution is right skewed. The country that has the highest GDP per capita is Qatar from Asia, then comes Luxembourg and Singapore, all of them have a very high HDI.
+The grouped box-plots provide more interesting conclusions: 
+- In the box-plots grouped by continent we observe that the GDP per capita of Europe is a little bit higher than the rest of the continents while Africa has the least median of GDP per capita with some "outliers" that have similar values as other continents. 
+- Nevertheless, the box-plots grouped by development give us more relevent information. We can more or less define whether a new country has very high, high, medium or low HDI by having its GDP per capita. Due to the clear difference of GPD per capita between the different levels of HDI. The countries that have very high HDI often have larger GDP per capita, and the countries with low HDI have less GDP per capita. There is a very clear correlation between these two variables.  
+
+```{r warning=FALSE}
+plots(dataset=data, col='gdp_per_capita',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+```
+The global distribution of this variable is very right skewed. 
+The distributions of Africa is more concentrated (leptokurtic) while others are more flat (platykurtic). 
+The distributions of countries that have low HDI are more concentrated, and they usually have less GDP per capita. 
+
+
+#### extreme poverty of each country
+
+```{r warning=FALSE}
+plots(dataset=data, col='extreme_poverty',type='boxplot')
+```
+
+```{r}
+head(data[order(data$extreme_poverty,decreasing=TRUE), ])
+```
+From the box-plot of the global extreme poverty we can observe that the distribution is right skewed. The country that has the highest extreme poverty is Madagascar, then comes Democratic Republic of Congo and Burundi, all of them are from Africa.
+However, the grouped box-plots provide more interesting conclusions: 
+- The box-plots grouped by continent tell us that the median of the extreme poverty of Europe is the least of all the continents while Africa has the highest median extreme poverty. 
+- The box-plots grouped by development give us more important information. The countries that have higher index of extreme poverty often have low HDI while the countries with lower extreme poverty have higher HDI. There is a quite clear correlation between these two variables. 
+
+```{r warning=FALSE}
+plots(dataset=data, col='extreme_poverty ',type='hist', density=TRUE, xtick_angles=c(0,30,20))
+```
+The global distribution of this variable is very right skewed. 
+The distributions of Europe is more concentrated (leptokurtic) in low values while others are more flat (platykurtic). 
+The distributions of countries that have very high HDI are more concentrated, and they usually have lower extreme poverty. 
+

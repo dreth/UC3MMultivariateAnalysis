@@ -209,6 +209,17 @@ plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
 plots(dataset=data, col='total_cases',type='boxplot')
 ```
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+# By continent
+data$location[data$total_cases==max(data$total_cases)]
+data$location[data$total_cases==max(data$total_cases[data$continent=='South America'])]
+data$location[data$total_cases==max(data$total_cases[data$continent=='Asia'])]
+
+# By development
+data$location[data$total_cases==max(data$total_cases[data$development=='very high'])]
+data$location[data$total_cases==max(data$total_cases[data$development=='high'])]
+data$location[data$total_cases==max(data$total_cases[data$development=='medium'])]
+```
 
 On the first box-plot of the variable, we can observe that the distribution of it is very right skewed, with some outliers. And the box-plots grouped by continents tell us that the country that has the most of the total cases is the US from continent North America which has a very high HDI. Meanwhile, the country that has the most of the total cases of Asia is India (second of the world), and has medium HDI. The third country that has the most of the cases is Brazil from South America with high HDI.
 
@@ -234,6 +245,16 @@ About the development of different countries, we can't group the coutries in ter
 plots(dataset=data, col='new_cases',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+# By continent
+data$location[data$new_cases==max(data$new_cases)]
+data$location[data$new_cases==max(data$new_cases[data$continent=='Europe'])]
+data$location[data$new_cases==max(data$new_cases[data$continent=='Asia'])]
+
+# By development
+data$location[data$new_cases==max(data$new_cases[data$development=='medium'])]
+head(data[order(data$new_cases,decreasing = TRUE),])
+```
 In the first box-plot above, we see that the distribution es very right skewed with some outliers. The country that has the most of the new cases is the US. 
 
 Observing the box-plot of new cases grouped by continent it is obvious that the country of North America that has the most of the new cases is the US. And the second country that has the most of the new cases is in Europe, France. Both of them have a very high Human Development Index. The third country that has the most of the new cases is India from Asia with medium HDI.
@@ -258,6 +279,10 @@ About the development of different countries, we can't group the coutries in ter
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
 plots(dataset=data, col='total_deaths',type='boxplot')
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$total_deaths,decreasing = TRUE),])
 ```
 
 From the box-plots above we can say that this variable of new deaths is very likely distributed with the variables total cases and new cases. These three variables are all right-skewed and all have some outliers.
@@ -285,6 +310,10 @@ We still can't group the coutries in terms of how they have developed by the tot
 plots(dataset=data, col='stringency_index',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$stringency_index),])
+```
+
 From the box-plot above we can say that the global distribution of stringency index is a little left skewed, but it is the most normally distributed until now. There are some countries that have really low stringency index, for example Afghanistan from Asia has stringency index equals to 5.56, or Nicaragua from North America with stringency index 8.33.
 
 Observing the box-plot of stringency index grouped by continent we can see that South America has the most strict measurements and Oceania has the least strict measurements. The rest of them have similar distribution on stringency index. 
@@ -309,6 +338,10 @@ We can probably distinguish the countries with low HDI from others, these countr
 plots(dataset=data, col='population',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$population,decreasing=TRUE), ])
+```
+
 Observing the box-plot above we can see that the distribution of population is very right skewed, some countries have way more population than others. 
 For example, China has the most population of all, India is the second, these two countries are most exaggerated outliersfrom the plot. 
 
@@ -328,6 +361,9 @@ The distribution is very right-skewed, the population of each country is very di
 plots(dataset=data, col='population_density',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$population_density,decreasing=TRUE), ])
+```
 Population density is a measurement of population per unit area. Observing the previous box-plot above we can see that the distribution of population density is very likely distributed as population distribution, it is very right skewed, some countries have really high population density. 
 For instance, Singapore has the most population density of all with a value of 7915.731, it is a small country of Asia with very high HDI. 
 
@@ -348,6 +384,9 @@ The distribution is very right-skewed, the population density of each country is
 plots(dataset=data, col='median_age',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$median_age,decreasing=TRUE), ])
+```
 Observing the box-plot for the global median age we can notice that the distribution of it is quite symmetric. The majority of the median age of different countries is located between 20-40. 
 
 But from the grouped box-plots we can find something really interesting: 
@@ -376,6 +415,9 @@ The distributions of Asia, North America, Oceania and South America are more fla
 plots(dataset=data, col='aged_65_older',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$aged_65_older,decreasing=TRUE), ])
+```
 From the box-plot for the global percentage of population aged 65 or older we can notice that the distribution is right skewed. There are more than half of the countries have less than 10% of population of aged 65 or older. 
 
 However, the grouped box-plots give us more interesting results: 
@@ -405,6 +447,9 @@ The distributions of countries that have low HDI are more concentrated, and they
 plots(dataset=data, col='gdp_per_capita',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$gdp_per_capita,decreasing=TRUE), ])
+```
 Observing the box-plot for the global GDP per capita we can see that the distribution is right skewed. The country that has the highest GDP per capita is Qatar from Asia, then comes Luxembourg and Singapore, all of them have a very high HDI.
 
 The grouped box-plots provide more interesting conclusions: 
@@ -432,6 +477,9 @@ The distributions of countries that have low HDI are more concentrated, and they
 plots(dataset=data, col='extreme_poverty',type='boxplot')
 ```
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+head(data[order(data$extreme_poverty,decreasing=TRUE), ])
+```
 From the box-plot of the global extreme poverty we can observe that the distribution is right skewed. The country that has the highest extreme poverty is Madagascar, then comes Democratic Republic of Congo and Burundi, all of them are from Africa. 
 
 However, the grouped box-plots provide more interesting conclusions: 
