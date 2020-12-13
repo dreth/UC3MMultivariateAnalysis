@@ -10,6 +10,7 @@ output:
     in_header: latex/header.tex
     before_body: latex/before_body.tex
     after_body: latex/after_body.tex
+    df_print: kable
 ---
 
 ```{r setup, include=FALSE}
@@ -39,6 +40,8 @@ library(mice)
 library(factoextra)
 library(corrplot)
 library(plotrix)
+library(corpcor)
+library(eqs2lavaan)
 ```
 
 Importing data
@@ -866,12 +869,411 @@ When grouping by our HDI categories, we see the following:
 
 \newpage
 
-# Principal Component Analysis (PCA)
+# Mean vector, covariance matrix and correlation matrix estimation
 
-Taking a subset of the dataset:
+Taking a subset of the dataset for use in this section:
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-covid = data[c('continent','location','development','total_cases','new_cases','total_deaths','stringency_index','population','population_density','median_age','aged_65_older','gdp_per_capita','extreme_poverty','cardiovasc_death_rate','diabetes_prevalence','hospital_beds_per_thousand','life_expectancy','human_development_index')]
+covid = data[c(categorical,interesting_vars)]
+covid$continent=factor(covid$continent)
+covid$development=factor(covid$development)
+```
+
+## Manipulating the data
+
+### Imputation of missing values
+
+For the NA values we use mice function to impute, when we use method *pmm*, it turned out an error with solving the inverse of data matrix, so we choose method *cart*.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+covid_imp=mice(covid,m=5,method = "cart")
+covid_imp=complete(covid_imp)
+```
+
+### Creating subsets of the main dataset for the categorical variables
+
+we have two categorical variables *continent* and *development* so we create two groups of subsets. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covid = covid_imp
+covid_quan=covid[,4:18]
+
+# development
+covid_quan_low=covid[covid$development=='low',4:18]
+covid_quan_medium=covid[covid$development=='medium',4:18]
+covid_quan_high=covid[covid$development=='high',4:18]
+covid_quan_veryhigh=covid[covid$development=='very high',4:18]
+
+# continent
+covid_asia=covid[covid$continent=='Asia',4:18]
+covid_euro=covid[covid$continent=='Europe',4:18]
+covid_name=covid[covid$continent=='North America',4:18]
+covid_same=covid[covid$continent=='South America',4:18]
+covid_afri=covid[covid$continent=='Africa',4:18]
+covid_ocea=covid[covid$continent=='Oceania',4:18]
+```
+
+\newpage
+
+## Calculations per HDI
+
+### Mean vectors per HDI
+
+we start with the first group by *development* and obtain the mean vectors. and put them together for presenting.
+
+\footnotesize
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+mean_a=colMeans(covid_quan)
+mean_l=colMeans(covid_quan_low)
+mean_m=colMeans(covid_quan_medium)
+mean_h=colMeans(covid_quan_high)
+mean_vh=colMeans(covid_quan_veryhigh)
+cbind(mean_a,mean_l,mean_m,mean_h,mean_vh)
+```
+
+\normalsize
+
+We can spot that for some variables there are obvious difference in populations. 
+
+- For median age: the lower the development, the younger the people are
+- For prop. of population aged 65 or older: very developed countries have a higher proportion
+- For Total cases, New cases, Total deaths, stringency_index, Population, median_age, aged_65_older, gdp_per_capita, hospital_beds_per_thousand, life_expectancy, human_development_index: the higher the HDI, the higher the values for these variables are.
+- For prop. of the population living under extreme poverty and cardiovasc_death_rate: the higher the HDI, the lower the values for these variables are.
+
+\newpage
+
+### Covariance matrix per HDI
+
+Then we present the covariance matrix for the data and each subset.
+
+\tiny
+
+General covariance matrix:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cov(covid_quan)
+```
+
+\normalsize
+
+\newpage
+
+For **low** HDI:
+
+\tiny
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cov(covid_quan_low)
+```
+
+\normalsize
+
+\newpage
+
+For **medium** HDI:
+
+\tiny
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cov(covid_quan_medium)
+```
+
+\normalsize
+
+\newpage
+
+For **high** HDI:
+
+\tiny
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cov(covid_quan_high)
+```
+
+\normalsize
+
+\newpage
+
+For **very high** HDI:
+
+\tiny
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+cov(covid_quan_veryhigh)
+```
+
+\normalsize
+
+\newpage
+
+### Correlation matrix per HDI
+
+Then we calculate the correlation matrix of each one, and visualize them with *corrplot*, and distinguish if there is any difference between groups.
+
+#### No grouping
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
+cor_all=cor(covid_quan)
+corrplot(cor_all)
+```
+
+There exists a high linear relationship between the following variables:
+
+- (>0.7,positive):
+    - total_cases-new_cases 
+    - total_cases-total_deaths 
+    - new_cases-total_deaths 
+    - median_age-life_expectancy
+    - median_age-aged_65_older
+    - median_age-human_development_index 
+    - life_expectancy-human_development_index
+
+- (<-0.7,negative):
+    - extreme_poverty-life_expectancy
+    - extreme_poverty-human_development_index
+
+\newpage
+
+#### Correlation plot for low HDI countries
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=6.5}
+cor_low=cor(covid_quan_low)
+corrplot(cor_low)
+```
+
+There exists a high linear relationship between the following variables for **low** HDI:
+
+- (>0.7,positive):
+    - total_cases-new_cases
+    - total_cases-total_deaths 
+    - total_cases-population
+    - new_cases-total_deaths
+    - median_age-life_expectancy
+    - median_age-aged_65_older 
+
+\newpage
+
+#### Correlation plot for medium HDI countries
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=6.5}
+cor_m=cor(covid_quan_medium)
+corrplot(cor_m)
+```
+
+There exists a high linear relationship between the following variables for **medium** HDI:
+
+- (>0.7,positive):
+    - total_cases-new_cases
+    - total_cases-total_deaths
+    - total_cases-population
+    - new_cases-total_deaths
+    - new_cases-population 
+    - new_cases-population 
+    - median_age-aged_65_older 
+
+\newpage
+
+#### Correlation plot for high HDI countries
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+cor_h=cor(covid_quan_high)
+corrplot(cor_h)
+```
+
+There exists a high linear relationship between the following variables for **high** HDI:
+
+- (>0.7,positive):
+    - new_cases-total_deaths
+    - median_age-aged_65_older
+ 
+\newpage
+
+#### Correlation plot for very high HDI countries
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=6}
+cor_vh=cor(covid_quan_veryhigh)
+corrplot(cor_vh)
+```
+
+
+There exists a high linear relationship between the following variables for **very high** HDI:
+
+- (>0.7,positive):
+    - total_cases-new_cases
+    - total_cases-total_deaths
+    - total_cases-population
+    - new_cases-total_deaths
+    - new_cases-population
+    - new_cases-population
+    - median_age-aged_65_older
+    - life_expectancy-human_development_index
+
+- (<-0.7,negative):
+    - cardiovasc_death_rate-life_expectancy
+    - diabetes_prevalence-aged_65_older
+
+\newpage
+
+## Calculations per continent
+
+### Mean vectors per continent
+
+\footnotesize
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+mean_asia=colMeans(covid_asia)
+mean_euro=colMeans(covid_euro)
+mean_ocea=colMeans(covid_ocea)
+mean_afri=colMeans(covid_afri)
+mean_same=colMeans(covid_same)
+mean_name=colMeans(covid_name)
+cbind(mean_a,mean_asia,mean_afri,mean_ocea,mean_euro,mean_same,mean_name)
+```
+
+\normalsize
+
+We can spot clear differences between groups, however, the difference is not as stark and obvious as we had when grouping by HDI. 
+
+\newpage
+
+### Correlation matrix per continent
+
+For continents, since we have 15 variables, given that North America, South America and Oceania have 23, 12, 6 countries respectively, we use the shrinkage covariance matrix instead.
+
+#### Correlation plot for Asia
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5.5}
+cor_as=cor(covid_asia)
+corrplot(cor_as)
+```
+
+There exists a high linear relationship between the following variables for **Asia**:
+
+- (>0.7,positive):
+    - total_cases-new_cases
+    - total_cases-total_deaths
+    - total_cases-population
+    - new_cases-total_deaths
+    - new_cases-population
+    - new_cases-population
+    - life_expectacy-human_development_index
+
+\newpage
+
+#### Correlation plot for Africa
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=7}
+cor_af=cor(covid_afri)
+corrplot(cor_af)
+```
+
+There exists a high linear relationship between the following variables for **Africa**:
+
+- (>0.7,positive):
+    - new_cases-total_deaths
+    - median_age-aged_65_older
+    - median_age-gdp_per_capita
+    - median_age-life_expectancy
+    - median_age-human_development_index
+
+\newpage
+
+#### Correlation plot for Oceania
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+S_oc=cov.shrink(covid_ocea,lambda=0,lambda.var=0,verbose=FALSE)
+corrplot(cov2cor(S_oc))
+```
+
+As a result of such a small number of observations we tend to have much higher correlations than we should.
+
+\newpage
+
+#### Correlation plot for Europe
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5.5}
+cor_eu=cor(covid_euro)
+corrplot(cor_eu)
+```
+
+There exists a high linear relationship between the following variables for **Europe**:
+
+- (>0.7,positive):
+    - total_cases-new_cases
+    - total_cases-total_deaths
+    - total_cases-population
+    - new_cases-total_deaths
+    - new_cases-population
+    - new_cases-population 
+    - median_age-aged_65_older
+    - gdp_per_capital-human_development_index
+    - life_expectancy-human_development_index
+
+- (<-0.7,negative):
+    - cardiovasc_death_rate-life_expectancy
+    - cardiovasc_death_rate-human_development_index
+
+\newpage
+
+#### Correlation plot for South America
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5.5}
+S_sa=cov.shrink(covid_same,lambda=0,lambda.var=0,verbose=FALSE)
+corrplot(cov2cor(S_sa))
+```
+
+There exists a high linear relationship between the following variables for **South America**:
+
+- (>0.7,positive):
+    - total_cases-new_cases
+    - total_cases-total_deaths
+    - total_cases-population
+    - new_cases-total_deaths
+    - new_cases-population
+    - new_cases-population
+    - median_age-aged_65_older
+    - gdp_per_capital-human_development_index
+    - life_expectancy-human_development_index
+
+- (<-0.7,negative):
+    - cardiovasc_death_rate-life_expectancy
+    - cardiovasc_death_rate-human_development_index
+
+\newpage
+
+#### Correlation plot for North America
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5.5}
+S_na=cov.shrink(covid_name,lambda=0,lambda.var=0,verbose=FALSE)
+corrplot(cov2cor(S_na))
+```
+
+There exists a high linear relationship between the following variables for **North America**:
+
+- (>0.7,positive):
+    - total_cases-new_cases
+    - total_cases-total_deaths
+    - total_cases-population
+    - new_cases-total_deaths
+    - new_cases-population
+    - new_cases-population
+    - median_age-aged_65_older
+    - gdp_per_capital-human_development_index
+    - life_expectancy-human_development_index
+
+- (<-0.7,negative):
+    - cardiovasc_death_rate-life_expectancy
+    - cardiovasc_death_rate-human_development_index
+
+\newpage
+
+# Principal Component Analysis (PCA)
+
+Taking a subset of the dataset for use in this section:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covid = data[c(categorical,interesting_vars)]
 covid$continent=factor(covid$continent)
 covid$development=factor(covid$development)
 ```
@@ -1153,7 +1555,7 @@ By using the same amount of principal components, we explain a higher percentage
 \scriptsize
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
-get_eigenvalue(X_pcs) #maybe 5
+get_eigenvalue(X_pcs)
 ```
 
 \normalsize
