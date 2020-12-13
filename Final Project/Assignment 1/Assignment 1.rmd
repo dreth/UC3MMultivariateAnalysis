@@ -36,6 +36,9 @@ library(foreach)
 library(MASS)
 library(andrews)
 library(mice)
+library(factoextra)
+library(corrplot)
+library(plotrix)
 ```
 
 Importing data
@@ -187,7 +190,7 @@ Which again, does not suggest at all that perhaps poverty situations do not exis
 
 \small
 
-```{r class.source="function", echo=TRUE, warning=FALSE, message=FALSE}
+```{r , echo=TRUE, warning=FALSE, message=FALSE}
 plots <- function(dataset ,col, type, density=TRUE, bins='default', xtick_angles='default') {
     var <- dataset %>% dplyr::select(col)
     if (bins == 'default') {bins = rep(10,3)}
@@ -576,7 +579,7 @@ plots(dataset=data, col='hospital_beds_per_thousand',type='boxplot')
 
 Looking at the hospital beds per thousand inhabitants variable boxplots we can see a few interesting things. We could use this variable as a measure of the quality of a healthcare system of a country. Where the higher the bed availability in hospitals is, the better the health system can cope with the demand for beds that a pandemic usually comes with. Especially with how widespread COVID-19 is.
 
-We can see that some extremely poor countries have about 0.1-0.3 beds per thousand inhabitants, like it is the case with Mali and Niger. Some other countries like South Korea or Belarus have an extremely high capacity, with around 12 and 11 beds per thousand inhabitants respectively. However, even if the amount of beds per thousand inhabitants seems to be low, there's some countries with a suspicious seemingly low amount of beds, however, some of this are clearly just very highly populated countries.  
+We can see that some extremely underdeveloped countries have about 0.1-0.3 beds per thousand inhabitants, like it is the case with Mali and Niger. Some other countries like South Korea or Belarus have an extremely high capacity, with around 12 and 11 beds per thousand inhabitants respectively. However, even if the amount of beds per thousand inhabitants seems to be low, there's some countries with a suspicious seemingly low amount of beds, however, some of this are clearly just very highly populated countries.  
 
 For countries with high and very high HDI, there's a clear bias towards having greater bed capacity, however, this is not the case for all countries with that quality as there's clearly some countries with medium HDI that have a quite formidable bed capacity as well.
 
@@ -827,11 +830,11 @@ When looking at the rest of the variables, which were separated from the right s
 
 Grouping by continent we can point out a few things:
 
-- Human development index is clearly significantly higher for Europe and some countries in North America, Asia and Oceania than the rest of the countries, while African countries usually take the bottom spots with some quite poor countries in Oceania, Asia and the Americas.
+- Human development index is clearly significantly higher for Europe and some countries in North America, Asia and Oceania than the rest of the countries, while African countries usually take the bottom spots with some quite underdeveloped countries in Oceania, Asia and the Americas.
 
 - Stringency index seems like a huge mashup, where the only discernible information we can take is that there's seemingly no way to tell which continents tend to have the strictest rules. Every country seems to do its own thing when it comes to restrictions.
 
-- life expectancy tells much of the same story we saw on the correlation plot and the histograms, clearly, the lower the quality of life in a country, the lower its life expectancy will be. And as most quality of life metrics disfavour poorest countries, life expectancy is not an exception here. We unfortunately also see Africa taking the lowest positions and very high development countries taking the highest, with Japan taking the top spot closely followed by Some European and Asian countries with very high HDI. Median age also follows this trend.
+- life expectancy tells much of the same story we saw on the correlation plot and the histograms, clearly, the lower the quality of life in a country, the lower its life expectancy will be. And as most quality of life metrics disfavour the least developed countries, life expectancy is not an exception here. We unfortunately also see Africa taking the lowest positions and very high development countries taking the highest, with Japan taking the top spot closely followed by Some European and Asian countries with very high HDI. Median age also follows this trend.
 
 - For diabetes prevalence there's a bit of a mash, where genetic background and diet seem to probably matter more than the location of individuals. Prevalence seems to be the highest in Oceania and the lowest in Africa and Europe.
 
@@ -859,3 +862,418 @@ When grouping by our HDI categories, we see the following:
 
 \newpage
 
+# Principal Component Analysis (PCA)
+
+Taking a subset of the dataset:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covid = data[c('continent','location','development','total_cases','new_cases','total_deaths','stringency_index','population','population_density','median_age','aged_65_older','gdp_per_capita','extreme_poverty','cardiovasc_death_rate','diabetes_prevalence','hospital_beds_per_thousand','life_expectancy','human_development_index')]
+covid$continent=factor(covid$continent)
+covid$development=factor(covid$development)
+```
+
+Imputation of missing values:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+covid_imp=mice(covid,m=5,method = "cart")
+covid_imp=complete(covid_imp)
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covid = covid_imp
+covid_quans=covid[,4:18] # quantitative variables
+```
+
+
+## PCA segregating by development (measure of HDI)
+
+Avoiding adding *human_development_index* as it constructs our target variable *development*.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+covid_quan <- covid_quans[,-15]
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+n <- nrow(covid_quan)
+p <- ncol(covid_quan)
+```
+
+\newpage
+
+### Checking the distribution of each variable using histogram
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide', fig.width=10, fig.height=12}
+par(mfrow=c(3,5))
+sapply(names(covid_quan),function(cname){hist(covid_quan[[cname]],main=cname,col = color_1)})
+```
+
+\newpage
+
+Transforming some of the variables using log because some of the variables are highly positively skewed
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide',fig.width=10, fig.height=10}
+covid_quan_log=covid_quan
+for (i in 1:6) {
+    if (i != 4) {
+        covid_quan_log[,i]=log(covid_quan[,i])
+    }
+}
+covid_quan_log$new_cases[which(covid_quan_log$new_cases== -Inf )] = 0
+par(mfrow=c(3,5))
+sapply(names(covid_quan_log),function(cname){hist(covid_quan_log[[cname]],main=cname,col = color_6)})
+```
+
+\newpage
+
+PC Scores:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+X_pcs <- prcomp(covid_quan_log, scale=TRUE)
+```
+
+### Plotting the first two PCs grouped by development
+
+We can see here the principal components differentiate perfectly the different levels for 4 levels of HDI
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+par(mfrow=c(1,1))
+plot(X_pcs$x[,1:2],pch=19,col=development_colors)
+```
+
+\newpage
+
+We can check the variance explained by each principal component, e.g. the first pincipal component explains 38% of the total variability and the second one explains 19.4%. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+fviz_eig(X_pcs,ncp=17,addlabels=T,barfill=color_1,barcolor=color_4)
+```
+
+\newpage
+
+### Checking eigenvalues and explained variance
+
+Now we check the eigenvalues and the cumulative percentage of explained variance, and we have decided to take the first 5 principal components. 
+
+We will be using the 33% of the variables and will be keeping the 81.99% of the total information. 
+
+\scriptsize
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+get_eigenvalue(X_pcs) 
+```
+
+\normalsize
+
+See the loadings of the first five principal components, loadings are the correlations between the original variables and the unit-scaled principal components, so we can examine the importance of each one of the original variables. 
+
+In this case, we see that the variables that are relevant for the first principal component are median_age (weight of -0.38833),  life_expectancy (weight of -0.37843), etc; the variables that are important for the second principal component are population (weight of -0.52215), total_cases of COVID19 (weight of -0.42947), etc. 
+
+\small
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+X_pcs$rotation[,1:5]
+```
+
+\normalsize
+
+\newpage
+
+### Plot of the first PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,1],pch=19,col=color_1,main="Weights for the first PC", xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,1],labels=colnames(covid_quan_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the second PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,2],pch=19,col=color_1,main="Weights for the second PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,2],labels=colnames(covid_quan_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the third PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,3],pch=19,col=color_1,main="Weights for the third PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,3],labels=colnames(covid_quan_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the fourth PC
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,4],pch=19,col=color_1,main="Weights for the fourth PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,4],labels=colnames(covid_quan_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the fifth PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,5],pch=19,col=color_1,main="Weights for the fifth PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,5],labels=colnames(covid_quan_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+The largest values in magnitude of first principal component are associated with developing countries because of the high values of the variable extreme poverty, and high rate of cardiovascular death rate. 
+
+The largest values in magnitude of second principal component are associated with developed countries because of the high values of the variable GDP per capita, life expectancy and hospital beds per thousand, also, we have seen in the first part (vusualization of variables) that the median age of a country is related to how developed the country is, so the conclusion here fits the previous analysis.
+
+On the other hand, there is something interesting here, it may tell us that the people from highly developed countries may be more prone to develop diabetes. (The radius is arbitrary) 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE,fig.width=10, fig.height=8}
+plot(X_pcs$rotation[,1:2],pch=19,col=color_1,main="Weights for the first two PCs")
+abline(h=0,v=0)
+text(X_pcs$rotation[,1:2],labels=colnames(covid_quan),pos=1,col=color_5,cex=0.75)
+draw.circle(0,0,0.3,border=color_4,lwd=1.5)
+```
+
+\newpage
+
+The biplot is an alternative way to plot points and the first two PCs together, this is useful for us because our dataset is not very large. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+biplot(X_pcs,col=c(color_1,color_5),cex=c(0.4,0.6))
+```
+
+\newpage
+
+### Plotting PC scores
+
+Now we plot the scores of the first five principal components, and it shows that the first principal component is the key to show the 4 groups of development. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=9}
+pairs(X_pcs$x[,1:5],col=development_colors,pch=19,main="The first five PCs")
+```
+
+The larger the value of the first PC is, then the least developed the country in question might be. Our purpose here is to check the largest values of the first PC.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+sort(X_pcs$x[,1],decreasing=TRUE)[1:10]
+```
+
+\newpage
+
+### Plotting the first two PCs grouped by development
+
+Now we plot the correlations between the original data set and the principal components, it is used to understand what are the most important variables in our dataset in terms of variability. 
+
+We can observe from the following plot that the first principal component explains the most the variability, then the second, and so on. 
+
+As we said before, the variables that are important for the first principal component are median age, life expectancy, percentage of aged 65 or older, and with a negative correlation, extreme poverty and cardiovascular death rate with a positive correlation. The higher the first principal component is, the lower the HDI of country will most likely be, and other way around. 
+
+On the contrary, the second principal component is positively correlated to GDP per capita, and negatively correlated to total deaths and total cases of COVID-19. Which probably means that, the higher the value of PC2, the more developed a country is (higher HDI).
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=7}
+corrplot(cor(covid_quan,X_pcs$x),is.corr=T)
+```
+
+\newpage
+
+## PCA segregating by continent
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+n <- nrow(covid_quans)
+p <- ncol(covid_quans)
+```
+
+### Checking the distribution of each variable using histograms
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide', fig.width=10, fig.height=8}
+par(mfrow=c(3,5))
+sapply(names(covid_quans),function(cname){hist(covid_quans[[cname]],main=cname,col = color_1)})
+```
+
+\newpage
+
+Transforming some of the variables using log because some of the variables are highly positively skewed
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide', fig.width=10, fig.height=8}
+covid_quans_log=covid_quans
+for (i in 1:6) {
+    if (i != 4) {
+        covid_quans_log[,i]=log(covid_quans[,i])
+    }
+}
+covid_quans_log$new_cases[which(covid_quans_log$new_cases== -Inf )] = 0
+par(mfrow=c(3,5))
+sapply(names(covid_quans_log),function(cname){hist(covid_quans_log[[cname]],main=cname,col = color_6)})
+```
+
+\newpage
+
+PC Scores:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+X_pcs <- prcomp(covid_quans_log, scale=TRUE)
+```
+
+### Plotting the first two PCs grouped by continent
+
+We can see here the principal components don't differentiate perfectly all 6 continents, but it classifies very well between Europe (*seagreen*) and Africa (*blueviolet*), just as what we had hypothesised on the first part (we can separate very clearly these two continents by using some important features like GDP or extreme poverty). 
+
+And we cannot comfortably conclude anything about Oceania as we only have 6 observations. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+plot(X_pcs$x[,1:2],pch=19,col=continent_colors)
+```
+
+\newpage
+
+#### Checking eigenvalues and explained variance
+
+Now we check the eigenvalues and the cumulative percentage of explained variance, and we have decided to select the first 5 principal components. 
+
+We have used the 33% of the variables and will be keeping the 82.6% of the total information. 
+
+By using the same amount of principal components, we explain a higher percentage of the total variance because of the variable HDI.
+
+\scriptsize
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+get_eigenvalue(X_pcs) #maybe 5
+```
+
+\normalsize
+
+We can examine the importance of each variable for the different principal components by using the loadings.
+
+In this case, we see that the variable HDI is a very important variable as it is highly correlated with the first principal component (-0.37720), and other variables that are relevant for the first principal component are exactly the same as what we did before. 
+
+And the variables that are important for the second principal component are population (weight of -0.52200), total_cases of COVID19 (weight of -0.45787), etc, which correspond to the first PCA that we have performed.
+
+\footnotesize
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+X_pcs$rotation[,1:5]
+```
+
+\normalsize
+
+\newpage
+
+### Plot of the first PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,1],pch=19,col=color_1,main="Weights for the first PC", xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,1],labels=colnames(covid_quans_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the second PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,2],pch=19,col=color_1,main="Weights for the second PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,2],labels=colnames(covid_quans_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the third PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,3],pch=19,col=color_1,main="Weights for the third PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,3],labels=colnames(covid_quans_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the fourth PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,4],pch=19,col=color_1,main="Weights for the fourth PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,4],labels=colnames(covid_quans_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+### Plot of the fifth PC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+plot(1:p,X_pcs$rotation[,5],pch=19,col=color_1,main="Weights for the fifth PC",
+     xlab="Variables",ylab="Score")
+abline(h=0)
+text(1:p,X_pcs$rotation[,5],labels=colnames(covid_quans_log),pos=1,col=color_5,cex=0.75)
+```
+
+\newpage
+
+The conclusions that we can get from this plot are basically the same as before. 
+
+Largest values in magnitude of first principal component are associated with less developed countries because of the high values of the variable extreme poverty, and high rate of cardiovascular death rate. 
+
+Largest values in magnitude of second principal component are associated with more developed countries because of the high values of the HDI, variable GDP, life expectancy and hospital beds per thousand. (The radius is arbitrary) 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=8}
+plot(X_pcs$rotation[,1:2],pch=19,col=color_1,main="Weights for the first two PCs")
+abline(h=0,v=0)
+text(X_pcs$rotation[,1:2],labels=colnames(covid_quans_log),pos=1,col=color_5,cex=0.6)
+library(plotrix)
+draw.circle(0,0,0.3,border=color_4,lwd=1.5)
+```
+
+\newpage
+
+The biplot is an alternative way to plot points and the first two PCs together.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=14}
+biplot(X_pcs,col=c(color_1,color_5),cex=c(0.4,0.6))
+```
+
+\newpage
+
+### Plotting PC scores
+
+Now we plot the scores of the first five principal components, and it shows that the first principal component is the key to show the 4 groups of development. 
+
+And we can only differ Africa from Europe very clearly. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=10}
+pairs(X_pcs$x[,1:5],col=continent_colors,pch=10,main="The first five PCs")
+```
+
+The larger the value of the first PC is, then the least developed the country in question might be. Our purpose here is to check the largest values of the first PC.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+sort(X_pcs$x[,1],decreasing=TRUE)[1:10]
+```
+
+\newpage
+
+### Plotting the first two PCs grouped by continent
+
+Now we plot the correlations between the original dataset and the principal components.
+
+The variables that are important for the first principal component are the same with the addition of HDI with a negative correlation. The higher the first principal component is, the higher the probability that the country belongs to Africa and that it isn't in Europe, but we cannot say anything about the other continents, there are not enough differences between them for us to classify. 
+
+On the other hand, the second principal component is also very similar to our first PCA. Which probably means that, the higher the value of PC2, the more likely it becomes that it is located in Europe.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=12}
+corrplot(cor(covid_quans,X_pcs$x),is.corr=T)
+```
