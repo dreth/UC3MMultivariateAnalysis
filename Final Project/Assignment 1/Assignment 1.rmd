@@ -123,7 +123,7 @@ interesting_vars <- c('total_cases','new_cases','total_deaths',
 
 ### Countries per continent in the dataset
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=continent, y=continent), show.legend = FALSE)
 ```
@@ -136,7 +136,7 @@ North america contains all of Central America and the Caribbean. Oceania contain
 
 ### Amount of countries per HDI 
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=development, y=development), show.legend = FALSE)
 ```
@@ -156,7 +156,7 @@ We followed Wikipedia's criteria for the construction of this variable as it acc
 
 ### Countries per continent per HDI
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=development ,y=continent))
 ```
@@ -171,7 +171,7 @@ To be fair, a country having high HDI does not imply that it isn't a developing 
 
 ### Proportions of HDI per continent
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=continent, y=development))
 ```
@@ -320,7 +320,7 @@ It is obvious that the country of North America that has the most of the total d
 
 ### Histogram and kernel density for total deaths due to COVID-19
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=8}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=7}
 plots(dataset=data, col='total_deaths',type='hist', density=FALSE,
       bins = c(55,15,13),xtick_angles=c(0,90,90))
 ```
@@ -408,6 +408,7 @@ plots(dataset=data, col='median_age',type='boxplot')
 Observing the box-plot for the global median age we can notice that the distribution of it is quite symmetric. The majority of the median age of different countries is located between 20-40. 
 
 But from the grouped box-plots we can find something really interesting: 
+
 - For the box-plots grouped by continent we can see that the median age of Europe is larger (more than 40) than the rest of the continents while Africa has the least median age (less than 20) with some "outliers" that have similar median age as other continents. 
 
 - For the box-plots grouped by development we detect that usually higher developed a country, larger the median age, e.g. the countries that have very high HDI have median of median age more than 40, and the countries that have low HDI have median of median ge less than 20. 
@@ -437,6 +438,7 @@ plots(dataset=data, col='aged_65_older',type='boxplot')
 From the box-plot for the global percentage of population aged 65 or older we can notice that the distribution is right skewed. There are more than half of the countries have less than 10% of population of aged 65 or older. 
 
 However, the grouped box-plots give us more interesting results: 
+
 - In the box-plots grouped by continent we can see that the percentage of population aged 65 or older of Europe is larger (more than 10%) than the rest of the continents while Africa has the least median age (generally less than 10%) with some "outliers" that have similar values as other continents. 
 
 - In the box-plots grouped by development we detect that usually higher developed a country, larger the median age. 
@@ -467,6 +469,7 @@ plots(dataset=data, col='gdp_per_capita',type='boxplot')
 Observing the box-plot for the global GDP per capita we can see that the distribution is right skewed. The country that has the highest GDP per capita is Qatar from Asia, then comes Luxembourg and Singapore, all of them have a very high HDI.
 
 The grouped box-plots provide more interesting conclusions: 
+
 - In the box-plots grouped by continent we observe that the GDP per capita of Europe is a little bit higher than the rest of the continents while Africa has the least median of GDP per capita with some "outliers" that have similar values as other continents. 
 
 - Nevertheless, the box-plots grouped by development give us more relevant information. We can more or less define whether a new country has very high, high, medium or low HDI by having its GDP per capita. Due to the clear difference of GPD per capita between the different levels of HDI. The countries that have very high HDI often have larger GDP per capita, and the countries with low HDI have less GDP per capita. There is a very clear correlation between these two variables.  
@@ -495,6 +498,7 @@ plots(dataset=data, col='extreme_poverty',type='boxplot')
 From the box-plot of the global extreme poverty we can observe that the distribution is right skewed. The country that has the highest extreme poverty is Madagascar, then comes Democratic Republic of Congo and Burundi, all of them are from Africa. 
 
 However, the grouped box-plots provide more interesting conclusions: 
+
 - The box-plots grouped by continent tell us that the median of the extreme poverty of Europe is the least of all the continents while Africa has the highest median extreme poverty. 
 
 - The box-plots grouped by development give us more important information. The countries that have higher index of extreme poverty often have low HDI while the countries with lower extreme poverty have higher HDI. There is a quite clear correlation between these two variables. 
@@ -1138,7 +1142,7 @@ plot(X_pcs$x[,1:2],pch=19,col=continent_colors)
 
 \newpage
 
-#### Checking eigenvalues and explained variance
+### Checking eigenvalues and explained variance
 
 Now we check the eigenvalues and the cumulative percentage of explained variance, and we have decided to select the first 5 principal components. 
 
