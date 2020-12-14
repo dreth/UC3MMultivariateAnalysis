@@ -1656,7 +1656,7 @@ biplot(X_pcs,col=c(color_1,color_5),cex=c(0.4,0.6))
 
 ### Plotting PC scores
 
-Now we plot the scores of the first five principal components, and it shows that the first principal component is the key to show the 4 groups of development. 
+Now we plot the scores of the first five principal components, and it shows that the first principal component is the key to show the difference between Europe and Africa. 
 
 And we can only differ Africa from Europe very clearly. 
 
