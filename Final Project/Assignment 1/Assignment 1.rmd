@@ -1,7 +1,7 @@
 ---
 title: 'Final project: Step 1'
 author: 'Danyu Zhang, Limingrui Wan, Daniel Alonso'
-date: 'December 13th, 2020'
+date: 'December 14th, 2020'
 output: 
   pdf_document:
     toc: true
@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 
 Importing libraries
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
 library(dplyr)
 library(ggplot2)
 library(reshape2)
@@ -41,19 +41,18 @@ library(factoextra)
 library(corrplot)
 library(plotrix)
 library(corpcor)
-library(eqs2lavaan)
 ```
 
 Importing data
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
 data <- read.csv('./data/data.csv')
 head(data)
 ```
 
 Excluding smoothed columns as they are redundant transformations of other columns
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
 removed_cols <- c('new_deaths_smoothed','new_cases_smoothed',
                   'new_cases_smoothed_per_million',
                   'total_cases_per_million','new_deaths_per_million',
@@ -109,7 +108,7 @@ for (col in removed_cols) {data_n <- data_n[names(data_n) != col]}
 
 We select variables that we consider interesting to visualize, as the ones we haven't selected might be ralated to these or even ratios of them (in the case of total cases per million)
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
 categorical <- c('location','continent','development')
 interesting_vars <- c('total_cases','new_cases','total_deaths',
                       'stringency_index','population',
@@ -126,7 +125,7 @@ interesting_vars <- c('total_cases','new_cases','total_deaths',
 
 ### Countries per continent in the dataset
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=continent, y=continent), show.legend = FALSE)
 ```
@@ -139,7 +138,7 @@ North america contains all of Central America and the Caribbean. Oceania contain
 
 ### Amount of countries per HDI 
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=development, y=development), show.legend = FALSE)
 ```
@@ -159,7 +158,7 @@ We followed Wikipedia's criteria for the construction of this variable as it acc
 
 ### Countries per continent per HDI
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=development ,y=continent))
 ```
@@ -174,7 +173,7 @@ To be fair, a country having high HDI does not imply that it isn't a developing 
 
 ### Proportions of HDI per continent
 
-```{r, echo=TRUE, warning=FALSE, mesage=FALSE, fig.height=5.5}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=continent, y=development))
 ```
