@@ -10,7 +10,6 @@ output:
     in_header: latex/header.tex
     before_body: latex/before_body.tex
     after_body: latex/after_body.tex
-    df_print: kable
 ---
 
 ```{r setup, include=FALSE}
