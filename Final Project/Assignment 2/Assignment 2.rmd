@@ -1,0 +1,197 @@
+---
+title: 'Final project: Step 1 & 2'
+author: 'Danyu Zhang, Limingrui Wan, Daniel Alonso'
+date: 'December 14th, 2020'
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 4
+  includes:
+    in_header: latex/header.tex
+    before_body: latex/before_body.tex
+    after_body: latex/after_body.tex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    collapse = TRUE,
+    comment = '#>',
+    fig.path = './figures/'
+)
+```
+
+\newpage
+
+Importing libraries
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(PerformanceAnalytics)
+library(gridExtra)
+library(stringr)
+library(foreach)
+library(MASS)
+library(andrews)
+library(mice)
+library(factoextra)
+library(corrplot)
+library(plotrix)
+library(corpcor)
+library(ggpubr)
+library(ca)
+```
+
+Importing data
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+data <- read.csv('./data/data_imp.csv', header=TRUE)[,]
+head(data)
+```
+
+# Cluster Analysis
+
+
+# Factor Analysis
+
+
+# Multidimensional Scaling
+
+
+# Correspondence analysis
+
+Given the following contigency table of each pair of classes corresponding to each variable (age group and health status), we will perform correspondence analysis:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+health <- matrix(c(243,789,167,18,6,220,809,164,35,
+                   6,147,658,181,41,8,90,469,236,50,
+                   16,53,414,306,106,30,44,267,284,
+                   98,20,20,136,157,66,17),nrow=7,
+                   ncol=5,byrow=TRUE)
+row.names(health)<-c("16-24","25-34","35-44",
+                     "45-54","55-64","65-74",
+                     "75+")
+colnames(health)<-c("VG","G","R","B","VB")
+health <- as.table(health)
+health_margins <- addmargins(health)
+knitr::kable(
+    health_margins,
+    booktabs=TRUE,
+    longtable=TRUE,
+    caption="health table"
+)
+```
+
+## Visual analysis of the data
+
+We can see a graphical representation of the contingency table as follows:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(health,xlab="Age group",ylab="Health status",col='red',main="Joint barplot")
+```
+
+In this joint barplot we can notice that the age groups are all more or less the same, with a small trend, where younger age groups tend to have a larger amount of individuals than older age groups. 
+
+We also notice that people with good health status are more abundant than the rest.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+ggballoonplot(as.data.frame(health),fill="value")+scale_fill_viridis_c(option="A")
+```
+
+Our balloon plot tells us much of the same, the larger age groups are hte younger ones and, in proportion, there's a significantly larger amount of people with good/very good health status in younger age groups, than those with worse status within the same age group. The older the age group gets, the lesser the amount of individuals with good/very good health status, and the more with regular/bad health status.
+
+Very bad health status individuals, while a very small subset of the general sample, are increasingly more common the older the age group is.
+
+Therefore, there are differences in the sizes of groups, in general. But the differences are not too dramatic for age group sizes, the differences are more significant for health status groups.  And there's definitely some relationship between the variables, or so we can infer from the plots.
+
+## Testing for independency between the variables
+
+Relative proportion table (observed):
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+health_rf <- prop.table(health)
+knitr::kable(
+    addmargins(health_rf),
+    booktabs=TRUE,
+    longtable=TRUE,
+    caption="health table"
+)
+```
+
+Here we can see how different groups are, the distribution of age groups is more even, however, for health status groups, "good" and "regular" gobble up over 70% of the observations.
+
+Chi squared test (observed vs expected):
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+chisq.test(health)
+```
+
+We get a p-value of <2e-16, which means that there's a significant dependence between the age group and health status variables.
+
+## Correspondence analysis for the data matrix
+
+First of all we calculate the total relative frequencies for rows/cols:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+rel_freq_rows <- rowSums(health_rf)
+rel_freq_cols <- colSums(health_rf)
+```
+
+We create a matrix of zeros where the diagonal is the sum of the rows of our relative frequency matrix and we do the same for the columns.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+diag_rs <- diag(rel_freq_rows)
+diag_cs <- diag(rel_freq_cols)
+```
+
+We the compute the matrices of row and column profiles:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+prof_rs <- solve(diag_rs) %*% health_rf
+apply(prof_rs, 1, sum)
+prof_cs <- solve(diag_cs) %*% t(health_rf)
+apply(prof_cs, 1, sum)
+```
+
+We compute the matrix M and its SVD:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+M <- diag(1/sqrt(rel_freq_rows)) %*% (health_rf - rel_freq_rows %*% t(rel_freq_cols)) %*% diag(1/sqrt(rel_freq_cols))
+M_svd <- svd(M)
+```
+
+We then define the Lambda, Gamma and Theta matrices:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+Lambda_M <- diag(M_svd$d)
+Gamma_M <- M_svd$u
+Theta_M <- M_svd$v
+```
+
+And we obtain each matrix:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+X_r <- diag(1/sqrt(rel_freq_rows)) %*% Gamma_M[,1:2] %*% Lambda_M[1:2,1:2]
+X_r
+X_c <- diag(1/sqrt(rel_freq_cols)) %*% Theta_M[,1:2] %*% Lambda_M[1:2,1:2]
+X_c
+```
+
+Utilizing the library 'ca' we can perform the same analysis in a more speedy manner:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+ca_ages_status <- ca(health)
+plot(ca_ages_status)
+
+Studies_Marital_Status <- prop.table(table(read.csv('../../datasets/Studies_Marital_Status.csv')))
+plot(ca(Studies_Marital_Status))
+
+
+```
+
+From this we can see a few things:
+
+- Clearly, most of these classes are dependent on each other
+- Groups of younger people
