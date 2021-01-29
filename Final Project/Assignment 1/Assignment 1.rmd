@@ -123,7 +123,6 @@ interesting_vars <- c('total_cases','new_cases','total_deaths',
 ## Plots with categorical variables
 
 ### Countries per continent in the dataset
-
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5.5}
 ggplot(data=data) +
     geom_bar(aes(fill=continent, y=continent), show.legend = FALSE)

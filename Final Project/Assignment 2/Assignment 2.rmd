@@ -42,22 +42,997 @@ library(plotrix)
 library(corpcor)
 library(ggpubr)
 library(ca)
-```
-
-Importing data
-
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
-data <- read.csv('./data/data_imp.csv', header=TRUE)[,]
-head(data)
+library(tidyverse)
+library(corpcor)
+library(RSpectra)
+library(factoextra)
+library(cluster)
+library(mclust)
+library(smacof)
 ```
 
 # Cluster Analysis
+
+## Pre-processing Data
+
+We define colors for plots
+
+\footnotesize
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+color_1 <- "deepskyblue2"
+color_2 <- "seagreen2"
+color_3 <- "orange2"
+color_4 <- "darkorchid4"
+color_5 <- "firebrick2"
+color_6 <- 'red'
+```
+
+\footnotesize
+
+As we stated in *step 1*, there are some variables as they are redundant transformations of other columns.
+For different cases we may need to use standardized data and cases where the model only work with quantitative variables.
+we need to build a few subsets.
+And we need to impute the missing values.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+data2 <- read.csv('./data/data_imp.csv', header=TRUE)
+data <- data2[,2:length(names(data2))]
+data$continent=as.factor(data$continent)
+data$development=as.factor(data$development)
+data_cate <- subset(data, select = c(continent,development,location))
+data_quan <- subset(data, select = -c(continent,development,location))
+```
+
+\newpage
+
+## PCA analysis
+
+### computing PCAs
+
+To visualize the results, we need to obtain the first two PCAs.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+S_shrink <- cov.shrink(data_quan)
+S <- S_shrink[1:ncol(data_quan),1:ncol(data_quan)]
+eig_S <- eigs_sym(S,2)
+data_quan_centred <- scale(data_quan,scale=FALSE)
+eigen_vectors_S <- eig_S$vectors[,1:2]
+Z <- data_quan_centred %*% eigen_vectors_S
+plot(Z,pch=19,main="First two PCs for the Covid-19 data set",
+     xlab="First PC",ylab="Second PC")
+```
+
+We can't tell how many groups from this picture, then we need to find that with multiple methods.
+
+\newpage
+
+## Partitional clustering
+
+### Partition of dataset
+
+We firstly check how is the data grouped by the categorical variables.
+
+#### Continent
+
+\footnotesize
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+table(data_cate[,1])
+```
+
+\normalsize
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+color_continent=c(color_1,color_2,color_3,color_4,color_5,color_6)[data$continent]
+plot(Z,pch=19,col=color_continent, main="First two PCs for the Covid-19 data set",
+     xlab="First PC",ylab="Second PC")
+```
+
+No sign of groups, i.t. we can't get information by knowing the location of a country.
+
+#### Development
+
+\footnotesize
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+table(data_cate[,2])
+```
+
+\normalsize
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+color_development=c(color_1,color_2,color_3,color_4)[data$development]
+plot(Z,pch=19,col=color_development, main="First two PCs for the Covid-19 data set",xlab="First PC",ylab="Second PC")
+```
+
+In this plot, groups are not separated well, the borders are not clear.
+
+\newpage
+
+### Select k
+
+#### WSS
+```{r, echo=FALSE, warning=FALSE, message=FALSE,results="hide"}
+fviz_nbclust(data_quan,kmeans,method="wss",k.max=10)
+```
+
+There is no optimal solution from WSS
+
+\newpage
+
+#### Silhoutte
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+fviz_nbclust(data_quan,kmeans,method="silhouette",k.max=10)
+```
+
+It sugguest us to set k into 2.
+
+\newpage
+
+#### Gap Statistic
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE,results="hide"}
+gap_stat <- clusGap(data_quan,FUN=kmeans,K.max=10,B=100)
+fviz_gap_stat(gap_stat,linecolor="steelblue",maxSE=list(method="firstmax",SE.factor = 1))
+```
+
+The result is 1, but we can't set the number of cluster to be 1 , otherwise, it makes no sense.
+
+\newpage
+
+### The K-means algorithm
+
+Notice that in our data, there are 3 categorical variables: but one of them is the names;one of them is the continent, which is irrelevant;one is development, but it's simple determined by numerical variable *develop*. 
+so we only choose the rest of variable which all are quantitative. 
+and we have only 181, not need to apply **CLARA**.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE,results="hide"}
+kmeans_1 <- kmeans(data_quan,centers=2,iter.max=1000,nstart=100)
+colors_kmeans_X = c(color_1,color_2)[kmeans_1$cluster]
+plot(Z,pch=19,col=colors_kmeans_X,main="First two PCs for the Covid-19 data set",xlab="First PC",ylab="Second PC")
+```
+
+we can try to increase k=4 because we have a categorical variable *development*, we can check the model with it.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE,results="hide"}
+kmeans_2 <- kmeans(data_quan,centers=4,iter.max=1000,nstart=100)
+colors_kmeans_X_2 = c(color_1,color_2,color_3,color_4)[kmeans_2$cluster]
+plot(Z,pch=19,col=colors_kmeans_X_2,main="First two PCs with K Means clustering",xlab="First PC",ylab="Second PC")
+```
+
+We now have a better clustering result.
+
+### K-means Analysis
+
+\footnotesize
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+table(kmeans_1$cluster)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data_kmeans_1=data_quan[kmeans_2$cluster==1,]
+data_kmeans_2=data_quan[kmeans_2$cluster==2,]
+cbind(colMeans(data_kmeans_1),colMeans(data_kmeans_2))
+```
+
+\normalsize
+
+when k = 2, we can see obvious difference between towo group.
+
+\footnotesize
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+data_kmeans_2_1=data_quan[kmeans_2$cluster==1,]
+data_kmeans_2_2=data_quan[kmeans_2$cluster==2,]
+data_kmeans_2_3=data_quan[kmeans_2$cluster==3,]
+data_kmeans_2_4=data_quan[kmeans_2$cluster==4,]
+cbind(colMeans(data_kmeans_2_1),colMeans(data_kmeans_2_2),colMeans(data_kmeans_2_3),colMeans(data_kmeans_2_4))
+```
+
+\normalsize
+
+After we tuning K into 4, it has a more interesting result, we can also characterize them with some features:
+from 1 to 4 means from lowest(fewest) to highest(most).
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|1|1|1|1|1|1|
+|cluster2|2|3|3|4|4|3|
+|cluster3|3|2|4|2|2|2|
+|cluster4|4|4|2|3|3|4|
+
+### PAM
+
+\footnotesize
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+pam_data <- pam(data_quan,k=4,metric="manhattan",stand=FALSE)
+PAM_cluster=pam_data$clustering
+colors_pam <- c(color_1,color_2,color_3,color_4)[PAM_cluster]
+plot(Z,pch=19,col=colors_pam,main="First two PCs for the Covid-19 data set",xlab="First PC",ylab="Second PC")
+```
+let's check the mean vector of the results of PAM.
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+data_kmeans_p_1=data_quan[pam_data$clustering==1,]
+data_kmeans_p_2=data_quan[pam_data$clustering==2,]
+data_kmeans_p_3=data_quan[pam_data$clustering==3,]
+data_kmeans_p_4=data_quan[pam_data$clustering==4,]
+cbind(colMeans(data_kmeans_p_1),colMeans(data_kmeans_p_2),colMeans(data_kmeans_p_3),colMeans(data_kmeans_p_4))
+```
+we can also charactsize the clusters as following table:
+from 1 to 4 means from lowest(fewest) to highest(most).
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|1|1|1|1|1|1|
+|cluster2|2|3|2|3|3|4|
+|cluster3|3|4|3|4|4|3|
+|cluster4|4|2|4|2|2|2|
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+sil_pam <- silhouette(pam_data$clustering,dist(data_quan,method="manhattan"))
+plot(sil_pam,col=color_1,main='silhouette')
+```
+ Here is the plot of silhouette.
+ \newpage
+ 
+## Hierarchical clustering
+
+There are multiple choice in this section, we will only accept the models with reasonable clusters. i.t. not too few or too many observations in one cluster.
+
+### Agglomerative algorithms
+
+#### Single linkage
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+man_dist <- daisy(data_quan,metric="manhattan",stand=FALSE)
+single = hclust(man_dist,method="single")
+cl_single = cutree(single,4)
+table(cl_single)
+```
+
+Single method is an obvious wrong choice. 
+
+#### Complete linkage
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+complete = hclust(man_dist,method="complete")
+cl_complete<- cutree(complete,4)
+table(cl_complete)
+```
+
+Still terrible, only a little bit better.
+
+#### Average linkage
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+average<- hclust(man_dist,method="average")
+cl_average <- cutree(average,4)
+table(cl_average)
+```
+
+Almost same as the previous one, 165 observations in cluster 1, and 16 in others, not a good result.
+
+#### Ward linkage
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.height=6}
+ward <- hclust(man_dist,method="ward")
+cl_ward <- cutree(ward,4)
+table(cl_ward)
+```
+
+This one is acceptable. let's move on and analyze it.
+
+#### Analysis
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(ward,main="Ward linkage",cex=0.8)
+```
+
+Since our assumed K is 4, we need to cut the highest connection, then we can have our clusters.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+colors_ward <- c(color_1,color_2,color_3,color_4)[cl_ward]
+plot(Z,pch=19,col=colors_ward,main="First two PCs for the Covid-19 data set",xlab="First PC",ylab="Second PC")
+```
+
+Through this plot, we can consider it's similar to the plot we get in *k means*, but the order of clusters has a different, we can do some adjustments then compare them.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+which(cl_ward==2)
+cl_ward[which(cl_ward==2)]=5
+cl_ward[which(cl_ward==4)]=2
+cl_ward[which(cl_ward==5)]=4
+table(kmeans_2$cluster,cl_ward)
+```
+
+The results are almost same.
+Then we can check the silhouette plot:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+sil_ward <- silhouette(cl_ward,man_dist)
+plot(sil_ward,main='silhouette',col=color_1)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+data_ward_1=data_quan[cl_ward==1,]
+data_ward_2=data_quan[cl_ward==2,]
+data_ward_3=data_quan[cl_ward==3,]
+data_ward_4=data_quan[cl_ward==4,]
+cbind(colMeans(data_ward_1),colMeans(data_ward_2),colMeans(data_ward_3),colMeans(data_ward_4))
+```
+
+We can also charactsize the clusters as following table:
+from 1 to 4 means from lowest(fewest) to highest(most).
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|1|1|1|1|1|1|
+|cluster2|2|3|3|4|4|3|
+|cluster3|3|2|4|2|2|2|
+|cluster4|4|4|2|3|3|4|
+ 
+### Divisive algorithms
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+diana <- diana(data_quan,metric="manhattan")
+cl_diana <- cutree(diana,4)
+table(cl_diana)
+```
+
+```{r,fig.width=10/2.54, fig.height=10/2.54, out.width="45%"}
+plot(diana,main="DIANA")
+```
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+colors_diana <- c(color_1,color_2,color_3,color_4)[cl_diana]
+plot(Z,pch=19,col=colors_diana,main="First two PCs for the Covid-19 data set",xlab="First PC",ylab="Second PC")
+```
+there are too many entries of cluster 1, we can hardly say that it a good one.
+
+so among all **Hierarchical clustering**s we will choose the result of **Ward**.
+
+\newpage
+
+## Model-based clustering
+
+### BIC
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+BIC <- mclustBIC(Z,G=1:5)
+plot(BIC)
+```
+
+### Model
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+Mclust <- Mclust(Z,x=BIC)
+summary(Mclust)
+Mclust$classification
+```
+
+### Parameters
+
+Here is the parameters' probability and mean vector
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+Mclust$parameters$pro
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+Mclust$parameters$mean
+```
+
+### Mclust plot
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(Mclust,what="classification")
+```
+
+### PCA plot
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+colors_Mclust <- c(color_1,color_2,color_3,color_4)[Mclust$classification]
+plot(Z,pch=19,col=colors_Mclust,main="First two PCs for the Covid-19 data set",xlab="First PC",ylab="Second PC")
+```
+
+### Probability plot
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow=c(2,2))
+n=nrow(data_quan)
+plot(1:n,Mclust$z[,1],pch=19,col=colors_Mclust,main="Cluster 1",xlab="Gene",ylab="Probability of cluster 1")
+plot(1:n,Mclust$z[,2],pch=19,col=colors_Mclust,main="Cluster 2",xlab="Gene",ylab="Probability of cluster 2")
+plot(1:n,Mclust$z[,3],pch=19,col=colors_Mclust,main="Cluster 3",xlab="Gene",ylab="Probability of cluster 3")
+plot(1:n,Mclust$z[,4],pch=19,col=colors_Mclust,main="Cluster 4",xlab="Gene",ylab="Probability of cluster 4")
+```
+
+These four plots show the probability of the observations locate in the specific cluster. We can see that each cluster has a fairly good performance. it is reliable.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+par(mfrow=c(1,1))
+plot(Mclust,what="uncertainty")
+```
+
+And here we can check the plot of those observations labeled with **uncertainty**
+
+### Analysis
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+data_Mclust_1=data_quan[Mclust$classification==1,]
+data_Mclust_2=data_quan[Mclust$classification==2,]
+data_Mclust_3=data_quan[Mclust$classification==3,]
+data_Mclust_4=data_quan[Mclust$classification==4,]
+cbind(colMeans(data_Mclust_1),colMeans(data_Mclust_2),colMeans(data_Mclust_3),colMeans(data_Mclust_4))
+```
+
+We can also characterize the clusters as following table:
+
+From 1 to 4 means from lowest(fewest) to highest(most).
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|2|2|1|1|1|1|
+|cluster2|3|3|2|3|3|4|
+|cluster3|4|4|3|4|4|3|
+|cluster4|1|1|4|2|2|2|
+
+\newpage
+
+## Analysis of the results
+
+We set the K into 4, i.t. we wish the algorithm can split the dataset into 4 clusters with clear border with the others. And there shouldn't be too many or too few observations in one cluster.
+
+Hence we present the result from *K-Means*,*PAM*,*Agglomerative algorithms with ward linkage*,*Model-based*. And here we can put all mean vectors together.
+
+1. K-Means:
+
+We can check the cluster number and which countries are in the same cluster, but the table would be to long to show it.
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+kmeans_country_1=data[kmeans_2$cluster==1,2]
+kmeans_country_2=data[kmeans_2$cluster==2,2]
+kmeans_country_3=data[kmeans_2$cluster==3,2]
+kmeans_country_4=data[kmeans_2$cluster==4,2]
+kmeans_2$cluster
+```
+from 1 to 4 means from lowest(fewest) to highest(most).
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|1|1|1|1|1|1|
+|cluster2|2|3|3|4|4|3|
+|cluster3|3|2|4|2|2|2|
+|cluster4|4|4|2|3|3|4|
+
+2. PAM:
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+PAM_country_1=data[pam_data$clustering==1,2]
+PAM_country_2=data[pam_data$clustering==2,2]
+PAM_country_3=data[pam_data$clustering==3,2]
+PAM_country_4=data[pam_data$clustering==4,2]
+PAM_cluster
+```
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|1|1|1|1|1|1|
+|cluster2|2|3|2|3|3|4|
+|cluster3|3|4|3|4|4|3|
+|cluster4|4|2|4|2|2|2|
+
+3.
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+ward_country_1=data[cl_ward==1,2]
+ward_country_2=data[cl_ward==2,2]
+ward_country_3=data[cl_ward==3,2]
+ward_country_4=data[cl_ward==4,2]
+cl_ward
+```
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|1|1|1|1|1|1|
+|cluster2|2|3|3|4|4|3|
+|cluster3|3|2|4|2|2|2|
+|cluster4|4|4|2|3|3|4|
+
+4. Model_based
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+Mclust_country_1=data[Mclust$classification==1,2]
+Mclust_country_2=data[Mclust$classification==2,2]
+Mclust_country_3=data[Mclust$classification==3,2]
+Mclust_country_4=data[Mclust$classification==4,2]
+Mclust$classification
+```
+
+|cluster|cases|death rate|economic|average age|medical resources|stringency|
+|:------|:------|:------|:------|:------|:------|:------|
+|cluster1|2|2|1|1|1|1|
+|cluster2|3|3|2|3|3|4|
+|cluster3|4|4|3|4|4|3|
+|cluster4|1|1|4|2|2|2|
 
 
 # Factor Analysis
 
 
+Our objective is to find out which are the main characteristics of the countries in our dataset using factor analysis, based on all these 18 numeric variables that we have. Each factor is a summary of some correlated variables, these factors are not correlated and are all equally important. 
+
+We have two aims doing factor analysis. One is to find the factors and try to understand them, the other is to estimate the value of the factor for each observation. To check whether these factors are good or not, we use communalities, which are values between 0 and 1, and they represent the percentage of variance explained. 
+
+As the countries are very different from one to anothers, we have divided the countries into four following groups to do the factor analysis by using the variable Human Development Index: low HDI, medium HDI, high medium and very high HDI in order to perform the factor analysis.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+rm(list = ls())
+options(digits=4)
+
+X <- read.csv("./data/data_imp.csv",header = TRUE)
+X <-as.data.frame(X[,-1])
+XX <- X[,-(1:2)]
+
+XX_low <- XX %>% filter(development=="low") %>% dplyr::select(-development)
+XX_medium <- XX %>% filter(development=="medium") %>% dplyr::select(-development)
+XX_high <- XX %>% filter(development=="high") %>% dplyr::select(-development)
+XX_veryhigh <- XX %>% filter(development=="very high") %>% dplyr::select(-development)
+```
+
+### 1. Low HDI: 
+
+*- PCFA*
+Our very first step is to obtain a correlation plot, it is the most important visual analysis for the variables in dataset, and is critical for factor analysis.
+
+We sorted the variables using their correlations, and we can see that there are groups of variables that are highly correlated. For instance, we have a group of variables which is relatad to the situation of covid of the country: new cases per million, total cases per million and total deaths per million; and another group of variables that are more or less highly correlated, median age and aged 65 or older. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Sample size and dimension of the personality data set
+n <- nrow(XX_low)
+p <- ncol(XX_low)
+
+library(corrplot)
+corrplot(cor(XX_low),order="hclust")
+# There are groups of correlated variables that may suggest a factor structure
+```
+To start the analysis, we scale the variables in order to obtain better results.  
+
+We can check here the variance explained by each principal component, e.g. the first principal component explains 26.5% of the total variability and the second principal component explains 14%. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Principal Component Factor Analysis
+# Obtain the PCs of the univariate standardized variables
+Y <- scale(XX_low)
+Y_pcs <- prcomp(Y)
+
+# Screeplot with all the eigenvalues
+fviz_eig(Y_pcs,ncp=p,addlabels=T,barfill=color_1,barcolor=color_4)
+```
+
+Now it is necessary to check the eigenvalues and the cumulative and the cumulative percentage of explained variance, we have decided to take 5 principal components, by doing that, we will be using the 5/15, which is the 33% of the variables and will be keeping the 70.76% of the total information.
+
+\footnotesize
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+get_eigenvalue(Y_pcs)
+```
+
+\normalsize
+
+From now on, let us focus on the first five PCs. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+r <- 5
+# Estimate the matrix M and use the varimax rotation for interpretability
+M_pcfa <- Y_pcs$rotation[,1:r] %*% diag(Y_pcs$sdev[1:r])
+M_pcfa <- varimax(M_pcfa)
+M_pcfa <- loadings(M_pcfa)[1:p,1:r]
+```
+
+We can observe here that the first factor appears to be an index of the mixture of the inverse of disease rate and the age variables, as we can see that the variable diabetes prevalence, cardiovascular rate, median age and aged 65 or older have a very low negative value (around -0.8). 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_pcfa[,1],pch=19,col=color_1,xlab="",ylab="Weights",ylim=c(-1,0.2),main="Weights for the first factor")
+abline(h=0)
+text(1:p,M_pcfa[,1],labels=colnames(XX_low),pos=1,col=color_5,cex=.75)
+```
+
+However, the second factor seems to be an index that measures the situation of the pandemic in each country as the variables cases per million, new cases per million and total deaths per million are very highly weighted, around 0.8. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_pcfa[,2],pch=19,col=color_1,xlab="",ylim=c(-0.4,0.8),ylab="Weights",main="Weights for the second factor")
+abline(h=0)
+text(1:p,M_pcfa[,2],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+The third factor appears to be an index of how developed a country is, because the variables gdp per capita, population and human development index have very high weights. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_pcfa[,3],pch=19,col=color_1,xlab="",ylab="Weights",ylim=c(-0.3,1),main="Weights for the third factor")
+abline(h=0)
+text(1:p,M_pcfa[,3],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+The fourth factor appears to be an index of the inverse of how developed a country is, as the variables life expectancy and HDI are negative with also a population density with a very low negative value. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_pcfa[,4],pch=19,col=color_1,ylim=c(-0.8,0.2),xlab="",ylab="Weights",main="Weights for the fourth factor")
+abline(h=0)
+text(1:p,M_pcfa[,4],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+The fifth factor appears to be an index of a mixture of all the variables, but the main variable of this factor is stringency index and extreme poverty with negative values. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_pcfa[,5],pch=19,ylim=c(-0.8,0.4),col=color_1,xlab="",ylab="Weights",main="Weights for the fifth factor")
+abline(h=0)
+text(1:p,M_pcfa[,5],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the covariance matrix of the errors
+Sigma_nu_pcfa <- diag(diag(cov(Y) - M_pcfa %*% t(M_pcfa)))
+```
+
+Communalities are values that range from 0 to 1, higher the value, higher the percentage of variabilities explained by the factor model. We plot the values of communalities and we can observe that the aspects of countries that are better explained by the factors are total covid cases per million, median age and gdp per capita (more then 80%). And the variables that are not explained that well are hospital beds per thousand and stringency index (50% or below).  
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Communalities and uniquenesses
+comm_pcfa <- diag(M_pcfa %*% t(M_pcfa))
+comm_pcfa
+plot(1:p,sort(comm_pcfa,decreasing=TRUE),pch=20,col=color_1,xlim=c(0,18),xlab="Variables",ylab="Communalities",
+     main="Communalities with PCFA")
+text(1:p,sort(comm_pcfa,decreasing=TRUE),labels=names(sort(comm_pcfa,decreasing=TRUE)),pos=4,col=color_5,cex=0.75)
+```
+
+The values of uniqueness are the same, but the other way around (1-Communality). 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+uniq_pcfa <- 1 - comm_pcfa
+uniq_pcfa
+names(uniq_pcfa) <- names(comm_pcfa)
+uniq_pcfa
+plot(1:p,sort(uniq_pcfa,decreasing=TRUE),pch=20,col=color_1,xlim=c(0,18),xlab="Variables",ylab="Uniquenesses",
+     main="Uniquenesses with PCFA")
+text(1:p,sort(uniq_pcfa,decreasing=TRUE),labels=names(sort(uniq_pcfa,decreasing=TRUE)),pos=4,col=color_5,cex=0.75)
+```
+
+From the following plot we can tell that all the factors are uncorrelated. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the factor scores
+F_pcfa <- Y %*% solve(Sigma_nu_pcfa) %*% M_pcfa %*% solve(t(M_pcfa) %*% solve(Sigma_nu_pcfa) %*% M_pcfa)
+colnames(F_pcfa) <- c("Factor 1","Factor 2","Factor 3","Factor 4","Factor 5")
+
+pairs(F_pcfa,pch=19,col=color_1)
+corrplot(cor(F_pcfa),order="hclust")
+```
+
+We plot the correlations between the residuals of the model. We can see that in the following plot that the correlations outside the diagonals the correlations are very low, except the correlation between population and gdp per capita, which means that if we include another factor, we might be able to explain the correlation, but as we only have 18 variables, we will only keep 5 factors. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the residuals
+Nu_pcfa <- Y - F_pcfa %*% t(M_pcfa)
+corrplot(cor(Nu_pcfa),order="hclust")
+```
+
+*- PFA*: It is a method of refinement of PCFA. 
+First step is to obtain the sample correlation matrix of our observations, and this is our sample covariance matrix. Then we obtain the eigenvector and eigenvalues. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Obtain the sample correlation matrix of X, that is the sample covariance matrix of Y
+R_X <- cor(XX_low)
+# Obtain R_X - Sigma_nu_pcfa, its eigenvectors and eigenvalues
+MM <- R_X - Sigma_nu_pcfa
+MM_eig <- eigen(MM)
+MM_values <- MM_eig$values
+MM_vectors <- MM_eig$vectors
+```
+
+Then we estimate the matrix M using the varimax rotaion. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the matrix M and use the varimax rotation for interpretability
+M_pfa <- MM_eig$vectors[,1:r] %*% diag(MM_eig$values[1:r])^(1/2)
+M_pfa <- varimax(M_pfa)
+M_pfa <- loadings(M_pfa)[1:p,1:r]
+```
+
+The objective here is to compare the results obtained from PCFA and PFA, and it is easy to observe from the following plot that the first three factors of PCFA and PFA are very similar, but the last two factors are quite different, so we plot the estimated weights for those two specific factors. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Compare PCFA and PFA estimates of M
+par(mfrow=c(2,3))
+plot(M_pcfa[,1],M_pfa[,1],pch=19,col=color_1,main="First factors with PCFA and PFA",xlab="PCFA",ylab="PFA")
+plot(M_pcfa[,2],M_pfa[,2],pch=19,col=color_1,main="Second factors with PCFA and PFA",xlab="PCFA",ylab="PFA")
+plot(M_pcfa[,3],M_pfa[,3],pch=19,col=color_1,main="Third factors with PCFA and PFA",xlab="PCFA",ylab="PFA")
+plot(M_pcfa[,4],M_pfa[,4],pch=19,col=color_1,main="Fourth factors with PCFA and PFA",xlab="PCFA",ylab="PFA")
+plot(M_pcfa[,5],M_pfa[,5],pch=19,col=color_1,main="Fifth factors with PCFA and PFA",xlab="PCFA",ylab="PFA")
+```
+
+The fourth factor might be a index of the disease rate. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_pfa[,4],pch=19,col=color_1,xlab="",ylim=c(-0.6,0.8),ylab="Weights",main="Weights for the fourth factor")
+abline(h=0)
+text(1:p,M_pfa[,4],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+The fifth factor appears to be an index of how developed a country is, as we have high positive weights for HDI and life expectancy and low negative weight for extreme poverty. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_pfa[,5],pch=19,col=color_1,xlab="",ylim = c(-0.6,0.8), ylab="Weights",main="Weights for the fifth factor")
+abline(h=0)
+text(1:p,M_pfa[,5],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+Now we compare the covariance matrix of the errors for PCFA and PFA, to do so, it is necessary to estimate the covariance matrix of the errors, and then plot them with the errors of PCFA method. 
+
+We can observe that they are very similar, there are only some small differences. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the covariance matrix of the errors
+Sigma_nu_pfa <- diag(diag(R_X - M_pfa %*% t(M_pfa)))
+# Compare with the estimate with the PCFA method
+par(mfrow=c(1,1))
+plot(diag(Sigma_nu_pcfa),diag(Sigma_nu_pfa),pch=19,col=color_1,main="Noise variances with PCFA and PFA",
+     xlab="PCFA",ylab="PFA")
+```
+
+Here we compare the values of communalities of the different methods. And we found out that the values of communalities are higher in the method of PFA, which means that this model explains more variabilities of those variables that appear in the following chunk. 
+
+The variables best explained by the factors using method PFA are total cases per million, median age and gdp per capita (explained by more than 80% of variabilities). 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Communalities and uniquenesses
+comm_pfa <- diag(M_pfa %*% t(M_pfa))
+names(comm_pfa) <- colnames(Y)
+
+sort(comm_pfa,decreasing=TRUE)
+sort(comm_pcfa,decreasing=TRUE)
+```
+
+We can observe that the most of the values of uniqueness of the method PFA are slightly higher than the method PFCA in the following chunk. 
+
+The variables worst explained by the factors using method PFA are stringency index, hospital beds per thousand, life expectancy, population density and extreme poverty (less than 50%). 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+uniq_pfa <- diag(Sigma_nu_pfa)
+names(uniq_pfa) <- names(comm_pfa)
+sort(uniq_pfa,decreasing=TRUE)
+sort(uniq_pcfa,decreasing=TRUE)
+```
+
+As for the method of PCFA, we can see here that the factors are uncorrelated. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the factor scores
+F_pfa <- Y %*% solve(Sigma_nu_pfa) %*% M_pfa %*% solve(t(M_pfa) %*% solve(Sigma_nu_pfa) %*% M_pfa)
+colnames(F_pfa) <- c("Factor 1","Factor 2","Factor 3","Factor 4","Factor 5")
+# See that the factors are uncorrelated
+pairs(F_pfa,pch=19,col=color_1)
+corrplot(cor(F_pfa),order="hclust")
+```
+
+As the results that we have obtained before, we can see that the factors are quite similar except for the last two, they kind of exchanged the position. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Obtain the correlation matrix between the PCFA and PFA estimates
+cor(F_pcfa,F_pfa)
+corrplot(cor(F_pcfa,F_pfa))
+```
+
+Now we plot the residuals. As before, the residuals show some some correlations that the model is not able to explain, e.g. the correlation between gdp per capita and population. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the residuals
+Nu_pfa <- Y - F_pfa %*% t(M_pfa)
+corrplot(cor(Nu_pfa),order="hclust")
+```
+
+Here we obtain the correlation matrix of residuals between the PCFA and PFA estimates, we can see that they are highly correlated. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Obtain the correlation matrix between the PCFA and PFA estimates
+corrplot(cor(Nu_pcfa,Nu_pfa))
+
+```
+
+Here we are trying to find the optimal number of factors that we should consider, but we can see that for 5 factors null hypothesis is not rejected, so we choose five factors as what we have done before. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Maximum likelihood estimation
+
+# Start with one factor
+Y_mle_1 <- factanal(Y,factors=1,rotation="varimax",scores="Bartlett")
+Y_mle_1$STATISTIC
+Y_mle_1$PVAL
+
+# two factors
+Y_mle_2 <- factanal(Y,factors=2,rotation="varimax",scores="Bartlett")
+Y_mle_2$STATISTIC
+Y_mle_2$PVAL
+
+# three factors
+Y_mle_3 <- factanal(Y,factors=3,rotation="varimax",scores="Bartlett")
+Y_mle_3$STATISTIC
+Y_mle_3$PVAL
+
+# four factors
+Y_mle_4 <- factanal(Y,factors=4,rotation="varimax",scores="Bartlett")
+Y_mle_4$STATISTIC
+Y_mle_4$PVAL
+
+# five factors
+Y_mle_5 <- factanal(Y,factors=5,rotation="varimax",scores="Bartlett")
+Y_mle_5$STATISTIC
+Y_mle_5$PVAL
+```
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Get the loading matrix
+M_mle <- loadings(Y_mle_5)[1:p,1:r]
+```
+
+We can see here that the factors are very different. So we plot the weights of each factor.
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Compare with PFA estimates
+par(mfrow=c(2,3))
+plot(M_pfa[,1],M_mle[,1],pch=19,col="deepskyblue2",main="First factors with PFA and MLE",xlab="PFA",ylab="MLE")
+plot(M_pfa[,2],M_mle[,2],pch=19,col="deepskyblue2",main="Second factors with PFA and MLE",xlab="PFA",ylab="MLE")
+plot(M_pfa[,3],M_mle[,5],pch=19,col="deepskyblue2",main="Third factor with PFA and fifth factor with MLE",xlab="PFA",ylab="MLE")
+plot(M_pfa[,4],M_mle[,3],pch=19,col="deepskyblue2",main="Fourth factor with PFA and third factor with MLE",xlab="PFA",ylab="MLE")
+plot(M_pfa[,5],M_mle[,4],pch=19,col="deepskyblue2",main="Fifth factors with PFA and fourth factor with MLE",xlab="PFA",ylab="MLE")
+```
+
+We can observe here that the first factor appears to be an index that explains the situation of pandemic for each country. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_mle[,1],pch=19,col=color_1,xlab="",ylim=c(-0.4,1),ylab="Weights",main="Weights for the first factor")
+abline(h=0)
+text(1:p,M_mle[,1],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+However, the second factor seems to be an index of age. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_mle[,2],pch=19,col=color_1,xlab="",ylim=c(-0.4,0.8),ylab="Weights",main="Weights for the second factor")
+abline(h=0)
+text(1:p,M_mle[,2],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+The third factor appears to be an index of development, as it has high positive weights for life expectancy and HDI and low negative values of extreme poverty. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_mle[,3],pch=19,col=color_1,xlab="",ylim=c(-0.6,0.8),ylab="Weights",main="Weights for the third factor")
+abline(h=0)
+text(1:p,M_mle[,3],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+The fourth factor seems to be an index of how developed a country is. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_mle[,4],pch=19,col=color_1,xlab="",ylab="Weights",ylim=c(-0.4,1),main="Weights for the fourth factor")
+abline(h=0)
+text(1:p,M_mle[,4],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+The fifth factor appears to be an index of a mixture between all the variables that we cannot understand. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+plot(1:p,M_mle[,5],pch=19,col=color_1,xlab="",ylab="Weights",ylim=c(-0.6,0.8),main="Weights for the fifth factor")
+abline(h=0)
+text(1:p,M_mle[,5],labels=colnames(XX_low),pos=1,col=color_5,cex=0.75)
+```
+
+By the following plot we can observe that there are only some small differences between the covariance matrix of errors between MLE and PFA. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the covariance matrix of the errors
+Sigma_nu_mle <- diag(diag(cov(Y) - M_mle %*% t(M_mle)))
+
+# Compare with the estimate with the PFA method
+par(mfrow=c(1,1))
+plot(diag(Sigma_nu_pfa),diag(Sigma_nu_mle),pch=19,col=color_1,main="Noise variances with PFA and MLE",
+     xlab="PFA",ylab="MLE")
+```
+
+There are changes in the sorting, the communalities are quite different from the method PFA. 
+
+The variables best explained by the factors are gdp per capita, total cases per million and median age (almost 100% explained). 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Communalities and uniquenesses
+comm_mle <- diag(M_mle %*% t(M_mle))
+names(comm_mle) <- colnames(Y)
+sort(comm_mle,decreasing=TRUE)
+sort(comm_pfa,decreasing=TRUE)
+```
+
+There are also changes in the sorting. 
+
+The variables worst explained by the factors are stringency index, population density and hospital beds per thousand. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+uniq_mle <- diag(Sigma_nu_mle)
+names(uniq_mle) <- names(comm_mle)
+sort(uniq_mle,decreasing=TRUE)
+sort(uniq_pfa,decreasing=TRUE)
+```
+
+The factors are uncorrelated in this method as as in other two methods. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the factor scores
+F_mle <- Y %*% solve(Sigma_nu_mle) %*% M_mle %*% solve(t(M_mle) %*% solve(Sigma_nu_mle) %*% M_mle)
+colnames(F_mle) <- c("Factor 1","Factor 2","Factor 3","Factor 4","Factor 5")
+pairs(F_mle,pch=19,col="deepskyblue2")
+corrplot(cor(F_mle),order="hclust")
+```
+
+The correlations are not the same, the have exchanged the positions. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Obtain the correlation matrix between the PFA and MLE estimates
+cor(F_pfa,F_mle)
+corrplot(cor(F_pfa,F_mle))
+```
+
+As before, the residuals show some correlations that the model is not able to explain, but we can see that the correlations in this method are much higher than the previous methods, it seems to be the worst method if we use the residual criterion to rank.  
+
+So we will only use the first method for the countries with medium HDI, high HDI and very high HDI. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Estimate the residuals
+Nu_mle <- Y - F_mle %*% t(M_mle)
+corrplot(cor(Nu_mle),order="hclust")
+```
+
+Now we obtain the correlation matrix between the PFA and MLE estimates. 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+# Obtain the correlation matrix between the PFA and MLE estimates
+Nu_pfa <- Y - F_pfa %*% t(M_pfa)
+corrplot(cor(Nu_pfa,Nu_mle))
+```
+
+
+
 # Multidimensional Scaling
+
+## Dataset: Similarity of cocktails' popularity in a certain hotel's bar
+
+The dataset contains how similar cocktails are in terms of popularity, the higher the similarity (between 1 and 0) the most similarly popular 2 drinks are. 
+
+A similarity of 1 = the cocktails are equally popular, similarity closer to 0 = one of the cocktails is significantly more popular than the other.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+ctails <- read.csv('./data/cocktails.csv')
+ctails <- ctails[,2:length(names(ctails))]
+```
+
+## Transform similarity matrix into dissimilarity matrix
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+d_ctails <- sim2diss(ctails,method="reverse",to.dist=TRUE)
+```
+
+The highest dissimilarity pair is old fashioned and mojito (1), which is the largest possible dissimilarity.
+
+## Multidimensional scaling using cmdscale
+
+We obtain the principal coordinates for $k = n - 1 = 8$
+ 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+mds <- cmdscale(d_ctails, k=8, eig=TRUE)
+```
+
+We have 4 positive eigen values, 4 negative eigenvalues and 1 eigen value which is roughly 0.
+
+Here we see them rounded:
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+round(mds$eig,2)
+```
+
+We then obtain the precision measure for our positive eigen values (the first 4):
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+mds.m <- cumsum(mds$eig[1:4]/sum(abs(mds$eig)))
+mds.m
+```
+
+Then we plot the eigenvalues and the precision measure calculated previously:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow=c(1,2))
+plot(1:9,mds$eig,type="b",col=color_1,pch=20,xlab="Eigenvalue number",ylab="Eigenvalue",main="Eigenvalues")
+abline(h=0)
+plot(1:4,mds.m,type="b",col=color_1,pch=20,xlab="Eigenvalue number",ylab="Precision measure",main="Precision measure for the positive eigenvalues")
+```
+
+We see that the first 3 PCs explain 70% of the variability, if we include the 4th PC, our explained variability goes up significantly, but not enough to reach 80%. Roughly ~76% of the variability.
+
+In this case, unfortunately, we would want to preserve more PCs than we'd like to, making representing the data graphically difficult.
+
+However, given that the first 2 PCs explain ~55% of the variability, we still take the liberty to plot the perceptual map of these two PCs:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow=c(1,1))
+plot(mds$points[,1],mds$points[,2],xlab="Principal coordinate 1",ylab="Principal coordinate 2",pch=20,col=color_1,ylim=c(-0.6,0.6),xlim=c(-0.6,0.6))
+text(mds$points[,1],mds$points[,2],labels=rownames(mds$points),col=color_4,pos=1)
+abline(v=0,h=0)
+```
+
+We see that our cocktails are all quite spread around the plot, where some drinks like whiskey sour or manhattan are starkly separated along the PC2 axis from margarita, which might indicate that the popularity of the drinks might come from a different subset of clients. Perhaps allows bundling of some of these cocktails to target different groups of clients.
+
+Old fashioned is also very particular, where its only similarity is shown in the PC2 with mojito but in a completely opposite manner in the PC1. Maybe this tells us that there's only a very particular type of customer that consumes the drink, a customer with a certain probability of also ordering mojito, but not necessarily doing so.
+
+We could also interpret that the closer a drink is to the origin, the lesser the difference it'll have with all the other drinks and maybe will construct an image that random clients will try, hinting there might not be a specific group preference for them. This is, for example (according to our data), the case of martini, where anyone would probably try it as it does not exactly share identical levels of popularity with other drinks (with the exception of old fashioned, or in the opposite case, margarita). Either way, we could simply say that it is consistently popular.
 
 
 # Correspondence analysis
@@ -179,6 +1154,8 @@ X_c <- diag(1/sqrt(rel_freq_cols)) %*% Theta_M[,1:2] %*% Lambda_M[1:2,1:2]
 X_c
 ```
 
+## Library 'ca' and conclusions
+
 Utilizing the library 'ca' we can perform the same analysis in a more speedy manner:
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
@@ -194,4 +1171,8 @@ plot(ca(Studies_Marital_Status))
 From this we can see a few things:
 
 - Clearly, most of these classes are dependent on each other
-- Groups of younger people
+- Very good health status is strongly dependent on the respondant being younger (16-24 and 25-34)
+- Good health status is also strongly dependent on people being relatively younger, but perhaps more than anything it's closer to group 35-44. Either way though, we can't underestimate good/very good's health status' dependence on youth overall.
+- Bad and very bad health status are often strongly dependent on older ages, especially 75+
+- Regular health status has a significant dependence on the respondants being 55-64 years of age. It seems like a decent way for this group to differentiate itself from the rest, where we can especulate that the respondants are not confident on their health status enough to say that they're in good or bad condition. We can also infer that many long-term health conditions that are mildly deteriorating are already somewhat developed by this age, conditions like vision issues (i.e. developed myopia), arthritis, osteoporosis and some heart conditions are either starting to be developed around this age or are already developed to significantly developed, therefore maybe skewing the individuals' perspective of their own health status. 
+- Age group 45-54 seems to be in a midpoint where no particular health status is dependent on it in any significant way, these people may or may not consider themselves in good health, but overall, it's a bit of a tossup between people with regular health status and good health status among individuals in this group.  
