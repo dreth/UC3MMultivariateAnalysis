@@ -3,10 +3,13 @@
 This is the second part of the final project for multivariate analysis made during my master's degree.
 
 My team was:
+
     - [Danyu Zhang](https://github.com/danyuz)
       - Factor Analysis
+      
     - Limigrui Wan
       - Cluster Analysis
+      
     - And me!
       - Multidimensional scaling and correspondence analysis
 
