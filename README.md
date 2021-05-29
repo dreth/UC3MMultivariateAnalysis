@@ -1,5 +1,6 @@
-# UC3MMultivariateAnalysis
-All multivariate analysis homeworks and projects done for the class.
+# Multivariate Analysis (UC3M)
+
+All multivariate analysis homeworks and projects done for the class taken at UC3M.
 
 Lecturer for this class was [Pedro Galeano San Miguel](https://portal.uc3m.es/portal/page/portal/dpto_estadistica/personal/pedro_galeano_san_miguel)
 
