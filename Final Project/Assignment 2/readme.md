@@ -7,7 +7,7 @@ My team was:
 - [Danyu Zhang](https://github.com/danyuz)
   - Factor Analysis
       
-- Limigrui Wan
+- [Limigrui Wan](https://github.com/juanliii)
   - Cluster Analysis
       
 - And me!
